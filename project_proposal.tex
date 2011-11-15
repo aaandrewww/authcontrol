@@ -77,27 +77,22 @@ Solution goes here
 
 \end{comment}
 
-\begin{section}{Goal}
-We will implement a file system in JOS with fine-grained access control for structured data.  
-If we think of a file with well a well defined format, we would like to be able to define different access levels for different fields.  
-This access would be enforced by the file system.  
-As a simple example, consider a file consisting of the names of users of a system followed by their usage and their passwords.  
-We would like read permissions as follows: the usage should be available to all processes, the names available just to system administration processes, and the passwords only available to login processes. 
-We may also want to define different write permissions.  
-A system administration process may be allowed to add users without being able to read or write existing data, a password setting process may be able to write, but not read, the password fields.
-\end{section}
-\begin{section}{Steps}
-\begin{enumerate}
-\item Define access control primitives for JOS.  
-We will start with \emph{open}, \emph{close}, \emph{create}, \emph{read} and \emph{write}, and add \emph{insert} and \emph{remove}.
-\item Define access control policies.  
-Ignoring the structured data aspect, we will define the policies that can be expressed using the above primitives.  
-Access will be granted on a per-program basis, with programs identifiers being derived from their names and text.
-\item Express access control policies as parser properties.  
-Each file will have an associated parser in which will be embedded the data access policies.
-\item 
-\end{enumerate}
+\begin{section}{Abstract}
 \end{section}
 
+\begin{section}{Introduction}
+\end{section}
+
+\begin{section}{Design}
+\end{section}
+
+\begin{section}{Implementation challenges}
+\end{section}
+
+\begin{section}{Evaluation sketch}
+\end{section}
+
+\begin{section}{Schedule}
+\end{section}
 
 \end{document}
