@@ -78,9 +78,6 @@ Solution goes here
 \end{comment}
 
 \begin{section}{Abstract}
-
-We plan to implement flexible access-control for 
-
 \end{section}
 
 \begin{section}{Introduction}
@@ -99,15 +96,16 @@ As far as risk goes, the proof-checker could be tricky to implement, but we have
 \begin{section}{Evaluation sketch}
 We would like our implementation to not be much slower for existing authentication (i.e. parent-child) checks.  
 We will compare the performance of common cross-environment operations with and without the authorization logic.  
-We will also see how the authorization logic scales, plotting performance vs. indirection (i.e. how much more expensive is it to check ``A says (B says C) $\implies$ C'' compared with ``A says C'').
+We will also see how the authorization logic scales, plotting performance vs. indirection (i.e. how much more expensive is it to check "A says (B says C)" compared with "A says C").
 We also see this as an alternative to IPC-based page sharing, and will compare the performance to that.
 \end{section}
 
 \begin{section}{Weekly Schedule}
 \begin{enumerate}
-\item Digital signatures, malloc, define the authorization logic
-\item Authorization logic data structures and proof checker
-\item Secure bindings for environment authorizations + extras (defined in Design section)
+\item Nov 15 - 21 Logic definition, authorization logic data structures and proof checker
+\item Nov 22 - 29 Digital signatures, malloc
+\item Nov 30 - Dec 6 Secure bindings for environment authorizations + evaluation + extras(?) (defined in Design section)
+\item Dec 7 - Dec 10 Write-up (more evaluation)
 \end{enumerate}
 \end{section}
 
