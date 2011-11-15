@@ -99,7 +99,7 @@ As far as risk goes, the proof-checker could be tricky to implement, but we have
 \begin{section}{Evaluation sketch}
 We would like our implementation to not be much slower for existing authentication (i.e. parent-child) checks.  
 We will compare the performance of common cross-environment operations with and without the authorization logic.  
-We will also see how the authorization logic scales, plotting performance vs. indirection (i.e. how much more expensive is it to check "A says (B says C)" compared with "A says C").
+We will also see how the authorization logic scales, plotting performance vs. indirection (i.e. how much more expensive is it to check ``A says (B says C) $\implies$ C'' compared with ``A says C'').
 We also see this as an alternative to IPC-based page sharing, and will compare the performance to that.
 \end{section}
 
