@@ -92,7 +92,7 @@ We plan to base our logic on the simple logic for access control given in \cite{
 $\trfrac[\;init]{}{\entails{\ctxt,F}{F}}$ \hfill
 $\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfill
 $\trfrac[\;weaken]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfill
-$\trfrac[\;impl]{\entails{\ctxt,\imp{F_1}{F_2}}{F_3}}{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}$ \\[1em]
+$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}{\entails{\ctxt,\imp{F_1}{F_2}}{F_3}}$ \\[1em]
 $\trfrac[\;sign]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}$ \hfill
 $\trfrac[\;conf]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}$ \hfill
 $\trfrac[\;say]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}$
