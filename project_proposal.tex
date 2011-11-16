@@ -25,6 +25,8 @@
 \setlength\voffset{-0.25in}
 \setlength\textheight{648pt}
 
+\usepackage[square,numbers]{natbib}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \usepackage{trfrac}
@@ -48,32 +50,32 @@
 
 \thispagestyle{empty}
 
-\begin{section}{Abstract}
-One of the primary goals of the 
-\end{section}
-
 \begin{section}{Introduction}
+Authorization logics are a principled technique for implementing rule-based access control mechanisms.
+They have several advantages over traditional OS access control mechanisms such as access control lists.
+In particular, they allow principals to express access control decisions for which they do not have complete information.
+Authorization logics also provide \emph{proof-carrying authorization}. That is, the capability to access a resource carries with it the set of authorization decisions that granted it.
+And other stuff too\ldots
 
-Mainstream operating systems expose relatively inflexible blah blah blah.
+\subsection{Related work}
+There has been quite a lot of work on authorization logics, particular in the context of distributed systems.
+Most recently, \citet{Nexus} developed the Nexus operating system, which uses authorization logic to combine different trust bases for secure systems into a cohesive authorization system.
+We plan to incorporate Nexus's method for handling the effect of dynamic state on authorization.
 
-Authorization logics are logical frameworks for implementing rule-based access control mechanisms.
-
-
-
+We plan to base our authorization logic on the \citet{Bauer}'s simple authorization logic.
+More sophisticated authorization logics are given by \citet{AURA} and \citet{Garg}.
 \end{section}
 
 \begin{section}{Design}
 
-We plan to implement an authorization mechanism for jOS system calls based on a simple authorization logic.
+We plan to replace the current authorization mechanism for jOS system calls (\textsf{envid2env}) with a new mechanism based on a simple authorization logic.
 Our authorization system will use authorization proofs as capabilities and support dynamic authorization decisions through secure bindings.
-
-\subsection{High-level architecture}
+Because our authorization library will be implemented primarily in user space, it also provides a mechanism for implementing access control for user level resources.
 
 \subsection{Principals}
 
 The principals in our system will be environments, \emph{$env_1 \ldots env_n$}, and a special \emph{kernel} environment.
 We believe these are appropriate principals because our authorization decisions apply to system calls, primarily those for manipulating environments.
-Furthermore, we are replacing the current authorization mechanism provided by the \textsf{envid2env($\ldots$)} function.
 
 \subsection{Authorization logic}
 
@@ -89,15 +91,15 @@ $\trfrac[\;init]{}{\entails{\ctxt,F}{F}}$ \hfill
 $\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfill
 $\trfrac[\;weaken]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfill
 $\trfrac[\;impl]{\entails{\ctxt,\imp{F_1}{F_2}}{F_3}}{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}$ \\[1em]
-$\trfrac[\;sign]{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}{\entails{\ctxt,F_1}{\says{A}{F_2}}}$ \hfill
-$\trfrac[\;conf]{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}{\entails{\ctxt,F_1}{\says{A}{F_2}}}$ \hfill
-$\trfrac[\;say]{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}{\entails{\ctxt,F_1}{\says{A}{F_2}}}$
+$\trfrac[\;sign]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}$ \hfill
+$\trfrac[\;conf]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}$ \hfill
+$\trfrac[\;say]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}$
 }
 
 \medskip
 
 The meta variable $A$ in the formulas \textsf{signed}, \textsf{says} and \textsf{confirms} ranges over principals.
-In a final version of our system, $P$ would denote basic first-order predicates (e.g., \pred{Trusted}{Env}, \pred{Parent}{Env}).
+$P$ would denotes uninterpreted first-order predicates (e.g., \pred{Trusted}{Env}, \pred{Parent}{Env}).
 The formula \imp{F_1}{F_2} denotes implication. 
 
 \sign{A}{F} indicates that $A$ believes $F$ to be true; at run time, it corresponds to a digitally signed assertion.
@@ -113,34 +115,65 @@ Crucially, checking the validity $\confirms{A}{F}$ does not create a reusable pr
 This allows time-sensitive or revocable authorization decisions to be implemented on top of our simple logic without explicitly incorporating time or revocation as primitives.
 \end{section}
 
+\begin{section}{Evaluation sketch}
+Ideally, our implementation will have comparable performance for existing authentication (i.e. parent--child) checks.
+We will measure the relative performance of system calls incorporating authorization in each system.
+We may also compare the performance of common cross-environment operations with and without the authorization logic.
+In particular, authorization logic should allow some environment interaction currently possible only through IPC to be implemented asynchronously.
+For instance, an environment can be authorized to map a page into another environments environment without an IPC call.
+Another possible evaluation is to see how proof-checking scales with additional layers of delegation.
+\end{section}
+
 \begin{section}{Implementation plan}
 
 \subsection{Implementation stages}
 
-To simplify our initial implementation, we will restrict $P$ to a single predicate, \pred{OK}{Env}.
+We are planning to implement our project in stages of increasing complexity to reduce the risk of trouble with one feature jeopardizing the entire project.
+
+\paragraph{Core features}
+In our initial implementation, we will restrict $P$ to a single predicate \pred{OK}{Env}.
+Providing a proof of \says{A}{\pred{OK}{Env}} will allow $Env$ to invoke system calls that previously
+required $Env$ to be a parent of $A$ through calls to \textsf{envid2env}.
+This is sufficient to implement and test delegation, but will simplify proof checking.
+We will also not implement \textsf{confirms}.
+
+\paragraph{Additional predicates}
+With additional predicates, we can implement support for binding an authorization goal to an environment, allowing programs to dynamically change their authorization policies.
+We will bootstrap this process by initially binding each process's authorization goal to \confirms{kernel}{\pred{Parent}{Env}} or a static equivalent if we do not yet support dynamic authorization.
+
+\paragraph{Authorization granularity}
+Another improvement over our base system will be the ability to bind goals to environment resources at higher levels of granularity, for instance to the ability to map and unmap pages or make IPC calls.
+We could further refine this to mapping specific pages, perhaps through additional predicates.
+
+\paragraph{Dynamic authorization}
+To implement \textsf{confirms}, we will need to add an authorization handling mechanism to the OS interface.
+We plan to base this on the jOS page fault handling implementation.
 
 \subsection{Implementation challenges}
 
-Much of this will be easier with dynamic memory allocation (heap).  
-For this we need \emph{malloc}.  
-We also will be using a cryptographic math library to support signatures. 
-As far as risk goes, the proof-checker could be tricky to implement, but we have a general idea of how to do it.
+Because we need to dynamically generate proof trees at runtime, our system will be easier to program if we have access to dynamic memory allocation.
+To facilitate this, we plan to port a simple malloc library to jOS as a user library. Since we have access to a simple malloc implementation that Scott developed as a CS61 TF, this should just require implementing \textsf{sbrk($\ldots$)} and related heap allocation functionality.
+We will also need to finish developing the cryptographic math library Andrew has been developing as part of his challenge problems to support signatures.
+
+We think the biggest risk in the project is implementing the proof-checker, but we have a good idea of how to do it.
+To mitigate this risk, we plan to implement the proof checker (and the authorization logic data structures) first, linking against malloc outside of the jOS environment.
+We will use dummy stubs for functionality like signature validation that we won't have implemented yet.
+
+\subsection{Schedule}
+\begin{tabular}{lcl|l}
+Nov. 14 &--& Nov. 21 & Implement core authorization logic data structures and proof checker \\
+Nov. 22 &--& Nov. 29 & Support libraries: digital signatures and dynamic memory allocation \\
+        &  &         & Begin jOS integration \\
+Nov. 30 &--& Dec. 6 & Finish jOS integration \\
+        &  &        & Additional features \\
+        &  &        & Begin evaluation \\
+Dec. 7 &--& Dec. 10 & Finish evaluation\\
+       &  &         & Write-up
+\end{tabular}
+
 \end{section}
 
-\begin{section}{Evaluation sketch}
-We would like our implementation to not be much slower for existing authentication (i.e. parent-child) checks.  
-We will compare the performance of common cross-environment operations with and without the authorization logic.  
-We will also see how the authorization logic scales, plotting performance vs. indirection (i.e. how much more expensive is it to check "A says (B says C)" compared with "A says C").
-We also see this as an alternative to IPC-based page sharing, and will compare the performance to that.
-\end{section}
-
-\begin{section}{Weekly Schedule}
-\begin{enumerate}
-\item Nov 15 - 21 Logic definition, authorization logic data structures and proof checker
-\item Nov 22 - 29 Digital signatures, malloc
-\item Nov 30 - Dec 6 Secure bindings for environment authorizations + evaluation + extras(?) (defined in Design section)
-\item Dec 7 - Dec 10 Write-up (more evaluation)
-\end{enumerate}
-\end{section}
+\bibliographystyle{plainnat}
+\bibliography{bib}
 
 \end{document}
