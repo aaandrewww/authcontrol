@@ -149,6 +149,7 @@ match p with
 end.
 
 Fixpoint check (g:formula) (p:proof) : Prop :=
+  (* if g = proof_goal p ... else False *)
   match p with
     | Signed_r f => match f with
                       | Signed_f _ _ => if formula_dec f g then True else False
