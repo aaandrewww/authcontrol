@@ -99,14 +99,29 @@ Inductive entails : context -> formula -> Prop :=
                                  (Says_f a f1)::C |-- Says_f a f2
 | Spec_e : forall C p f1 f2 a, (subst p f1 0)::C |-- Says_f a f2 ->
                                  (Abs_f f1)::C |-- Says_f a f2
-| Weaken_e : forall C1 f, C1 |-- f -> forall C2, incl C1 C2 -> C2 |-- f (* should prove as a lemma *)
+| Weaken_e : forall C1 C2 f, C1 |-- f -> incl C1 C2 -> C2 |-- f (* should prove as a lemma? *)
 where "C '|--' F" := (entails C F).
-  
 
-Definition delegate a b p := Signed_f (Pcpl_p a) (Abs_f (Impl_f (Says_f (Pcpl_p b) (Pred_f p (Var_p 0))) (Pred_f p (Var_p 0)))).
+(** The main lemma *)
+Lemma cut_elimination : forall C f1 f2, C |-- f1 -> f1::C |-- f2 -> C |-- f2.
+Admitted.
 
-Open Local Scope string_scope.
+Lemma append_incl_l : forall A (C1 C2:list A), incl C1 (C1++C2).
+Admitted.
 
+Lemma append_incl_r : forall A (C1 C2:list A), incl C2 (C1++C2).
+Admitted.
+
+Lemma append_incl_1 : forall A (C1 C2 C3:list A), incl C1 (C1++C2++C3).
+Admitted.
+
+Lemma append_incl_2 : forall A (C1 C2 C3:list A), incl C2 (C1++C2++C3).
+Admitted.
+
+Lemma append_incl_3 : forall A (C1 C2 C3:list A), incl C3 (C1++C2++C3).
+Admitted.
+
+(* Could be improved a lot... *)
 Ltac prove_auth := 
   match goal with
     | [ |- (Abs_f _)::_ |-- Says_f _ _ ] => idtac
@@ -120,20 +135,6 @@ Ltac prove_auth :=
   end.
 
 Ltac spec_auth p := eapply (Spec_e _ p _ _ _) ; simpl.
-
-Lemma test : (delegate "a" "b" "ok")::(Signed_f (Pcpl_p "b") (Pred_f "ok" (Pcpl_p "c")))::nil |-- Says_f (Pcpl_p "a") (Pred_f "ok" (Pcpl_p "c")).
-Proof.
-  Show.
-  unfold delegate ; repeat prove_auth; spec_auth "c" ; repeat prove_auth.
-Qed.
-
-Lemma says : Signed_f (Pcpl_p "a") (Pred_f "p" (Pcpl_p "a"))::nil  |-- Says_f (Pcpl_p "a") (Pred_f "p" (Pcpl_p "a")).
-Proof.
- Show.
- apply Signed_e.
- apply Tauto_e.
- apply Init_e.
-Qed.
 
 (** Define a data structure for proofs *)
 Inductive proof : Set :=
@@ -228,58 +229,6 @@ match p with
   | Says_Spec_r f a p1 p2 => List.app (axioms ((Some a)::e) p1) (axioms ((Some a)::e) p2)
 end.
 
-Definition assumps (e:env) (p:proof) : context :=
-match p with
-  | Signed_r f => nil
-  | Confirms_r f => nil
-  | Tauto_r f p1 => (subst_simul e (proof_goal p1))::nil
-  | Impl_r f p1 p2 p3 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::(subst_simul e (proof_goal p3))::nil
-  | Says_Confirms_r f p1 p2 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::nil
-  | Says_Signed_r f p1 p2 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::nil
-  | Says_Says_r f p1 p2 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::nil
-  | Says_Spec_r f a p1 p2 => (subst_simul ((Some a)::e) (proof_goal p1))::(subst_simul ((Some a)::e) (proof_goal p2))::nil
-end.
-
-Fixpoint all_none (e:env) : Prop :=
-  match e with
-    | nil => True
-    | None::e2 => all_none e2
-    | _ => False
-  end.
-
-Lemma nth_foo : forall T ls n (x:T), nth_error ls n = Some x -> In x ls.
-Admitted.
-
-Lemma prsubst_nil : forall p e, all_none e -> ((prsubst p e) = p).
-Proof.
-  intros.
-  unfold prsubst.
-  destruct p ; auto.
-  case_eq (nth_error e v) ; intros ; subst ; auto.
-  destruct o ; auto.
-  elimtype False.
-  apply nth_foo in H0.
-  induction e.
-  auto.
-  destruct H0.
-  subst ; simpl in * ; congruence.
-  apply IHe. simpl in H. destruct a ; auto ; exfalso ; auto.
-  apply H0.
-Qed.
-
-Lemma subst_nil : forall f e, all_none e -> ((subst_simul e f) = f).
-Proof.
-  induction f ; intros ; simpl ; try(rewrite prsubst_nil ; auto) ;
-  simpl ; auto ; try(rewrite IHf) ; auto ;
-  specialize (IHf1 e H) ; specialize (IHf2 e H) ; rewrite IHf1 ; rewrite IHf2 ; auto.
-Qed.
-
-Lemma weaken : forall C f1, C |-- f1 -> forall f2, C |-- f2 -> f1::C |-- f2.
-Admitted.
-
-Lemma weaken_many : forall C1 f, (C1 |-- f) -> forall C2, (C2++C1)%list |-- f.
-Admitted.
-
 (** Proof checker - Checks the proof tree from the bottom up. *)
 Fixpoint check (g:formula) (e:env) (p:proof) : option (axioms e p |-- subst_simul e g).
   refine (
@@ -294,7 +243,7 @@ Fixpoint check (g:formula) (e:env) (p:proof) : option (axioms e p |-- subst_simu
             if formula_comp e f e (Confirms_f pr f1) then Some _ else None
         | Tauto_r (Says_f pr f1) p1 => 
             if formula_comp e f e (Says_f pr f1) then if check f1 e p1 then Some _ else None else None
-(*        | Impl_r f3 p1 p2 p3 => 
+        | Impl_r f3 p1 p2 p3 => 
             if formula_comp e f e f3
               then match proof_goal p2 with
                      | Impl_f f1 f2 => if check f1 e p1
@@ -304,14 +253,14 @@ Fixpoint check (g:formula) (e:env) (p:proof) : option (axioms e p |-- subst_simu
                                          else None
                      | _ => None
                    end
-              else None*)
+              else None
         | Says_Confirms_r (Says_f pr f2) p1 p2 =>
             if formula_comp e f e (Says_f pr f2)
               then match proof_goal p1 with
                      | Confirms_f pr0 f1 => if principal_dec (prsubst pr e) (prsubst pr0 e)
                                               then
                                                 if check (Confirms_f pr f1) e p1
-                                                  then if check (Impl_f f1 f) e p2 then Some _ else None
+                                                  then if check (Impl_f (Says_f pr f1) f) e p2 then Some _ else None
                                                   else None
                                               else None
                      | _ => None
@@ -320,9 +269,57 @@ Fixpoint check (g:formula) (e:env) (p:proof) : option (axioms e p |-- subst_simu
         | _ => None
       end
   end) ;
-  try (rewrite fg_eq in * ; rewrite _H in * ; subst ; simpl in * ; prove_auth ; auto ; fail).
-  
+  (* Rewrite equalities *)
+    rewrite fg_eq in * ; rewrite _H in * ; subst ; simpl in * ;
+  (* Signed, Confirms, Tauto *)
+    try (prove_auth ; auto ; fail).
+  (* Impl *)
+    eapply (Weaken_e _ (axioms e p1 ++ axioms e p2 ++ axioms e p3)) in _H0.
+    eapply (Weaken_e _ (axioms e p1 ++ axioms e p2 ++ axioms e p3)) in _H1.
+    eapply (Weaken_e _ (axioms e p1 ++ axioms e p2 ++ axioms e p3)) in _H2.
+    eapply (cut_elimination _ (Impl_f (subst_simul e f2) (subst_simul e f3))) ; auto.
+    eapply Impl_e.
+    eapply (cut_elimination _ (Impl_f (subst_simul e f1) (subst_simul e f2))) ; auto.
+    eapply Impl_e.
+    eapply (cut_elimination _ (subst_simul e f1)) ; auto.
+    eapply Init_e. eapply Init_e. eapply Init_e.
+    apply append_incl_3.
+    apply append_incl_2.
+    apply append_incl_1.
+  (* Says_Confirms *)
+    eapply (Weaken_e _ (axioms e p1 ++ axioms e p2)) in _H1.
+    eapply (Weaken_e _ (axioms e p1 ++ axioms e p2)) in _H2.
+    eapply (cut_elimination _ (Impl_f (Says_f (prsubst pr e) (subst_simul e f1)) (subst_simul e f))) ; auto.
+    eapply Impl_e.
+    eapply (cut_elimination _ (Confirms_f (prsubst pr e) (subst_simul e f1))) ; auto.
+    eapply Confirms_e ; eapply Tauto_e ; eapply Init_e ; auto.
+    rewrite _H ; eapply Init_e.
+    apply append_incl_r.
+    apply append_incl_l.
+Defined.
 
+
+
+
+(** Testing *)
+
+Definition delegate a b p := Signed_f (Pcpl_p a) (Abs_f (Impl_f (Says_f (Pcpl_p b) (Pred_f p (Var_p 0))) (Pred_f p (Var_p 0)))).
+
+Open Local Scope string_scope.
+
+Lemma test : (delegate "a" "b" "ok")::(Signed_f (Pcpl_p "b") (Pred_f "ok" (Pcpl_p "c")))::nil |-- Says_f (Pcpl_p "a") (Pred_f "ok" (Pcpl_p "c")).
+Proof.
+  Show.
+  unfold delegate ; repeat prove_auth; spec_auth "c" ; repeat prove_auth.
+Qed.
+
+Lemma says : Signed_f (Pcpl_p "a") (Pred_f "p" (Pcpl_p "a"))::nil  |-- Says_f (Pcpl_p "a") (Pred_f "p" (Pcpl_p "a")).
+Proof.
+ Show.
+ apply Signed_e.
+ apply Tauto_e.
+ apply Init_e.
+Qed.
 (*
         | Confirms_r f => match f with
                             | Confirms_f _ _ => formula_comp e g e f
