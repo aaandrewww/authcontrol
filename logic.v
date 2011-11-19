@@ -81,7 +81,7 @@ Definition env := list (option pcpl).
 Reserved Notation "c '|--' g" (at level 70).
 
 Inductive entails : context -> formula -> Prop :=
-| Init_e : forall C f, member f C -> C |-- f
+| Init_e : forall C f, f::C |-- f
 | Tauto_e : forall C f, C |-- f -> 
                 forall a, C |-- Says_f a f
 | Weaken_Impl_e : forall C f1 f2, f1::C |-- f2 -> 
@@ -91,14 +91,17 @@ Inductive entails : context -> formula -> Prop :=
                                     (Impl_f f1 f2)::C |-- f3
 | Signed_e : forall C a f1 f2, f1::C |-- Says_f a f2 -> 
                                    (Signed_f a f1)::C |-- Says_f a f2
+| Signed_Assump_e : forall C a f, C |-- Signed_f a f
 | Confirms_e : forall C a f1 f2, f1::C |-- Says_f a f2 -> 
                                      (Confirms_f a f1)::C |-- Says_f a f2
+| Confirms_Assump_e : forall C a f, C |-- Confirms_f a f
 | Says_e : forall C a f1 f2, f1::C |-- Says_f a f2 ->
                                  (Says_f a f1)::C |-- Says_f a f2
 | Spec_e : forall C p f1 f2 a, (subst p f1 0)::C |-- Says_f a f2 ->
                                  (Abs_f f1)::C |-- Says_f a f2
-| Weaken_e : forall f1 C f2, C |-- f2 -> f1::C |-- f2
+| Weaken_e : forall C1 f, C1 |-- f -> forall C2, incl C1 C2 -> C2 |-- f (* should prove as a lemma *)
 where "C '|--' F" := (entails C F).
+  
 
 Definition delegate a b p := Signed_f (Pcpl_p a) (Abs_f (Impl_f (Says_f (Pcpl_p b) (Pred_f p (Var_p 0))) (Pred_f p (Var_p 0)))).
 
@@ -130,7 +133,6 @@ Proof.
  apply Signed_e.
  apply Tauto_e.
  apply Init_e.
- simpl. auto.
 Qed.
 
 (** Define a data structure for proofs *)
@@ -158,7 +160,6 @@ match p with
   | Says_Says_r f _ _ => f
   | Says_Spec_r f _ _ _ => f
 end.
-
 
 Definition prsubst (p:principal) (e:env) : principal :=
   match p with
@@ -227,6 +228,18 @@ match p with
   | Says_Spec_r f a p1 p2 => List.app (axioms ((Some a)::e) p1) (axioms ((Some a)::e) p2)
 end.
 
+Definition assumps (e:env) (p:proof) : context :=
+match p with
+  | Signed_r f => nil
+  | Confirms_r f => nil
+  | Tauto_r f p1 => (subst_simul e (proof_goal p1))::nil
+  | Impl_r f p1 p2 p3 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::(subst_simul e (proof_goal p3))::nil
+  | Says_Confirms_r f p1 p2 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::nil
+  | Says_Signed_r f p1 p2 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::nil
+  | Says_Says_r f p1 p2 => (subst_simul e (proof_goal p1))::(subst_simul e (proof_goal p2))::nil
+  | Says_Spec_r f a p1 p2 => (subst_simul ((Some a)::e) (proof_goal p1))::(subst_simul ((Some a)::e) (proof_goal p2))::nil
+end.
+
 Fixpoint all_none (e:env) : Prop :=
   match e with
     | nil => True
@@ -261,6 +274,12 @@ Proof.
   specialize (IHf1 e H) ; specialize (IHf2 e H) ; rewrite IHf1 ; rewrite IHf2 ; auto.
 Qed.
 
+Lemma weaken : forall C f1, C |-- f1 -> forall f2, C |-- f2 -> f1::C |-- f2.
+Admitted.
+
+Lemma weaken_many : forall C1 f, (C1 |-- f) -> forall C2, (C2++C1)%list |-- f.
+Admitted.
+
 (** Proof checker - Checks the proof tree from the bottom up. *)
 Fixpoint check (g:formula) (e:env) (p:proof) : option (axioms e p |-- subst_simul e g).
   refine (
@@ -269,65 +288,39 @@ Fixpoint check (g:formula) (e:env) (p:proof) : option (axioms e p |-- subst_simu
     | None => None
     | Some fg_eq =>
       match p with
-        | Signed_r (Signed_f pr f1) => if formula_comp e f e (Signed_f pr f1) then Some _ else None
-        | Confirms_r (Confirms_f pr f1) => if formula_comp e f e (Confirms_f pr f1) then Some _ else None
-        | Tauto_r (Says_f pr f1) p1 => if formula_comp e f e (Says_f pr f1) then if check f1 e p1 then Some _ else None else None
-        | Impl_r f3 p1 p2 p3 => if formula_comp e f e f3
-                                  then match proof_goal p2 with
-                                         | Impl_f f1 f2 => if check f1 e p1
-                                                             then if check (Impl_f f1 f2) e p2
-                                                                    then if check (Impl_f f2 f3) e p3 then Some _ else None
-                                                                    else None
-                                                             else None
-                                         | _ => None
-                                       end
-                                  else None
+        | Signed_r (Signed_f pr f1) => 
+            if formula_comp e f e (Signed_f pr f1) then Some _ else None
+        | Confirms_r (Confirms_f pr f1) => 
+            if formula_comp e f e (Confirms_f pr f1) then Some _ else None
+        | Tauto_r (Says_f pr f1) p1 => 
+            if formula_comp e f e (Says_f pr f1) then if check f1 e p1 then Some _ else None else None
+(*        | Impl_r f3 p1 p2 p3 => 
+            if formula_comp e f e f3
+              then match proof_goal p2 with
+                     | Impl_f f1 f2 => if check f1 e p1
+                                         then if check (Impl_f f1 f2) e p2
+                                                then if check (Impl_f f2 f3) e p3 then Some _ else None
+                                                else None
+                                         else None
+                     | _ => None
+                   end
+              else None*)
+        | Says_Confirms_r (Says_f pr f2) p1 p2 =>
+            if formula_comp e f e (Says_f pr f2)
+              then match proof_goal p1 with
+                     | Confirms_f pr0 f1 => if principal_dec (prsubst pr e) (prsubst pr0 e)
+                                              then
+                                                if check (Confirms_f pr f1) e p1
+                                                  then if check (Impl_f f1 f) e p2 then Some _ else None
+                                                  else None
+                                              else None
+                     | _ => None
+                   end
+              else None
         | _ => None
       end
   end) ;
-  simpl ; rewrite fg_eq ; rewrite _H ; try(simpl ; apply Init_e ; unfold member ; destruct formula_dec ; auto ; fail).
-  simpl ; apply Tauto_e ; auto.
-  simpl in *. 
-
-Lemma weaken_ctxt : forall f1 f2 C1 C2, C1 |-- f1 -> In f2 C1 -> In f2 C2 -> C2 |-- f1.
-Admitted.
-
-Lemma weaken_ctxt_app : forall f1 C1 C2, C1 |-- f1 -> (C1++C2)%list |-- f1.
-Admitted.
-
-Lemma app_impl : forall ax1 ax2 f1 f2, ax1 |-- Impl_f f1 f2 -> ax2 |-- f1 -> List.app ax1 ax2 |-- f2.
-Proof.
-  intros.
-  assert ((ax1 ++ ax2)%list |-- Impl_f f1 f2).
-  apply weaken_ctxt_app ; auto.
-  assert ((ax1 ++ ax2)%list |-- f1).
-  apply weaken_ctxt_app ; auto.
-
-
-Lemma rep_ax : forall f1 f2 f3 C, f1::C |-- f2 -> f3::nil |-- f1 -> f3::C |-- f2.
-Proof.
-  intros.
-  
-  
-  
-  assert (f3::C |-- f1).
-  eapply weaken_ctxt ; auto.
-  clear H0.
-  apply (Impl_e 
-
-Show.
-  
-
-  simpl in *.  induction p1. induction p2. induction p3. simpl in *.
-  apply Weaken_e in _H0.
-  apply Weaken_e in _H1.
-
-  Show.
-Defined.
-
-
-rewrite subst_nil in fg_eq ; rewrite subst_nil in fg_eq.
-  rewrite fg_eq.
+  try (rewrite fg_eq in * ; rewrite _H in * ; subst ; simpl in * ; prove_auth ; auto ; fail).
   
 
 (*
@@ -375,42 +368,3 @@ rewrite subst_nil in fg_eq ; rewrite subst_nil in fg_eq.
                                       end
       end
    end. (* The formula does not match the goal *)*)
-
-
-Fixpoint axioms (p:proof) : context :=
-match p with
-  | Signed_r f => f::nil
-  | Confirms_r f => f::nil
-  | Tauto_r f p1 => axioms p1
-  | Impl_r f p1 p2 p3 => List.app (axioms p1) (List.app (axioms p2) (axioms p3))
-  | Says_Confirms_r f p1 p2 => List.app (axioms p1) (axioms p2) 
-  | Says_Signed_r f p1 p2 => List.app (axioms p1) (axioms p2)
-  | Says_Says_r f p1 p2 => List.app (axioms p1) (axioms p2)
-  | Says_Spec_r f _ p1 p2 => List.app (axioms p1) (axioms p2)
-end.
-
-(** Prove that check f p -> (all signed or confirmed things) |- f *)
-
-(*Lemma foo : forall f1 f2, (if formula_dec f1 f2 then True else False) = (if formula_dec f2 f1 then True else False). 
-Proof.
-  intros ; destruct formula_dec ; destruct formula_dec ; simpl ; congruence.
-Qed.  
-
-Theorem checker_correct : forall f e p, check f e p -> axioms p |-- f.
-Proof.
-  intros.
-  induction p.
-  simpl in *.
-  destruct f0 ; try (exfalso ; auto ; fail).
-  
-  
-
-  induction p ; try (simpl in * ; destruct f0 ; try (exfalso ; auto ; fail) ; prove_auth ; try (rewrite foo ; auto) ; fail).
-  assert (axioms (Tauto_r f0 p) = axioms p).
-  simpl ; auto.
-  rewrite H0.
-  simpl in H.
-  destruct f0 ; try (exfalso ; auto ; fail).
-  destruct formula_dec.
-  rewrite e in H0.
-Admitted.*)
