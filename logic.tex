@@ -1,0 +1,121 @@
+\documentclass[10pt]{article}
+
+%AMS-TeX packages
+\usepackage{amssymb,amsmath,amsthm,amssymb}
+%geometry (sets margin) and other useful packages
+\usepackage[margin=1.25in]{geometry}
+\usepackage{graphicx,ctable,booktabs}
+\usepackage{verbatim}
+
+%
+%Fancy-header package to modify header/page numbering 
+%
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+%\addtolength{\headwidth}{\marginparsep} %these change header-rule width
+%\addtolength{\headwidth}{\marginparwidth}
+\lhead{CS 261 Project Proposal}
+\chead{} 
+\rhead{\thepage} 
+\lfoot{\small Andrew Johnson and Scott Moore} 
+\cfoot{} 
+\rfoot{\footnotesize CS 261 Project Proposal} 
+\renewcommand{\headrulewidth}{.3pt} 
+\renewcommand{\footrulewidth}{.3pt}
+\setlength\voffset{-0.25in}
+\setlength\textheight{648pt}
+
+\usepackage[square,numbers]{natbib}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{trfrac}
+\newcommand{\sign}[2]{\ensuremath{#1\;\textsf{signed}\;#2}}
+\newcommand{\imp}[2]{\ensuremath{#1 \rightarrow #2}}
+\newcommand{\says}[2]{\ensuremath{#1\;\textsf{says}\;#2}}
+\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{confirms}\;#2}}
+\newcommand{\ctxt}[0]{\ensuremath{\Gamma}}
+\newcommand{\nil}[0]{\ensuremath{\cdot}}
+\newcommand{\bnfsep}[0]{\ensuremath{\quad\mid\quad}}
+\newcommand{\entails}[2]{\ensuremath{#1 \vdash #2}}
+\newcommand{\pred}[2]{\ensuremath{\textsc{#1}(#2)}}
+\newcommand{\subst}[2]{\ensuremath{[#1/#2]}}
+\newcommand{\abs}[1]{\ensuremath{\forall x:\;#1}}
+
+\begin{document}
+
+\title{CS 261: Project Proposal}
+\author{Andrew Johnson and Scott Moore}
+\date{November 15, 2011}
+
+%\maketitle
+
+\thispagestyle{empty}
+
+\section{Core syntax}
+
+\begin{tabular}{llcl}
+\emph{principals} & R & ::= & $x$ \bnfsep $v$ \\
+\emph{predicates} & P & ::= & $pred(R)$ \\
+\emph{formulas} & F & ::= & $P$ \bnfsep \imp{F_1}{F_2} \bnfsep \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F} \\
+\emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,$F$ \\
+\end{tabular}
+
+\section{Core logic}
+
+{
+\center
+$\trfrac[\;weaken]{\entails{\ctxt_1}{F} \quad \ctxt_1 \subseteq \ctxt_2}{\entails{\ctxt_2}{F}}$ \hfil
+$\trfrac[\;init]{}{\entails{\ctxt,F}{F}}$ \\[1em]
+$\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfil
+$\trfrac[\;weaken impl]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfil
+$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}{\entails{\ctxt,\imp{F_1}{F_2}}{F_3}}$ \\[1em]
+$\trfrac[\;sign]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;conf]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}$ \\[1em]
+$\trfrac[\;says]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;spec]{\entails{\exists p:\;\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt,\abs{F_1}}{\says{A}{F_2}}}$ \\[1em]
+}
+
+\section{Runtime logic}
+
+\newcommand{\rtcheck}[0]{\ensuremath{\textsf{Runtime check}}}
+
+{
+\center
+$\trfrac[\;signed]{\rtcheck}{\entails{\ctxt}{\sign{A}{F}}}$ \hfil
+$\trfrac[\;confirms]{\rtcheck}{\entails{\ctxt}{\confirms{A}{F}}}$ \hfil
+$\trfrac[\;init]{F \in \ctxt}{\entails{\ctxt}{F}}$ \\[1em]
+
+$\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfil
+$\trfrac[\;weaken impl]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfil
+$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt}{\imp{F_1}{F_2}}}{\entails{\ctxt}{F_2}}$ \\[1em]
+
+$\trfrac[\;sign]{\entails{\ctxt}{\sign{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;conf]{\entails{\ctxt}{\confirms{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \\[1em]
+
+$\trfrac[\;says]{\entails{\ctxt}{\says{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;spec]{\entails{\ctxt}{\abs{F_1}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
+}
+
+\section{Proof Objects}
+
+\newcommand{\with}[1]{\ensuremath{\;(\text{with } #1)}}
+
+{
+\center
+$\trfrac[\;signed]{\rtcheck}{\sign{A}{F}}$ \hfil
+$\trfrac[\;confirms]{\rtcheck}{\confirms{A}{F}}$ \hfil
+$\trfrac[\;init]{\rtcheck}{F}$ \\[1em]
+
+$\trfrac[\;tauto]{F}{\says{A}{F}}$ \hfil
+$\trfrac[\;weaken impl]{F_2 \with{F_1}}{\imp{F_1}{F_2}}$ \hfil
+$\trfrac[\;impl]{F_1 \quad \imp{F_1}{F_2}}{F_2}$ \\[1em]
+
+$\trfrac[\;sign]{\sign{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \hfil
+$\trfrac[\;conf]{\confirms{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \\[1em]
+
+$\trfrac[\;says]{\says{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \hfil
+$\trfrac[\;spec]{\abs{F_1} \quad p \quad \says{A}{F_2} \with{F_1\subst{p}{x}}}{\says{A}{F_2}}$
+}
+
+\end{document}
