@@ -73,7 +73,7 @@ $\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}{\entails{\
 $\trfrac[\;sign]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}$ \hfil
 $\trfrac[\;conf]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}$ \\[1em]
 $\trfrac[\;says]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}$ \hfil
-$\trfrac[\;spec]{\entails{\exists p:\;\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt,\abs{F_1}}{\says{A}{F_2}}}$ \\[1em]
+$\trfrac[\;spec]{\entails{\exists p:\;\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{(\abs{F_1})}}{\says{A}{F_2}}}$ \\[1em]
 }
 
 \section{Runtime logic}
@@ -94,7 +94,7 @@ $\trfrac[\;sign]{\entails{\ctxt}{\sign{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{
 $\trfrac[\;conf]{\entails{\ctxt}{\confirms{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \\[1em]
 
 $\trfrac[\;says]{\entails{\ctxt}{\says{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
-$\trfrac[\;spec]{\entails{\ctxt}{\abs{F_1}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
+$\trfrac[\;spec]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
 }
 
 \section{Proof Objects}
@@ -115,7 +115,7 @@ $\trfrac[\;sign]{\sign{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \
 $\trfrac[\;conf]{\confirms{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \\[1em]
 
 $\trfrac[\;says]{\says{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \hfil
-$\trfrac[\;spec]{\abs{F_1} \quad p \quad \says{A}{F_2} \with{F_1\subst{p}{x}}}{\says{A}{F_2}}$
+$\trfrac[\;spec]{\says{A}{(\abs{F_1})} \quad p \quad \says{A}{F_2} \with{F_1\subst{p}{x}}}{\says{A}{F_2}}$
 }
 
 \end{document}
