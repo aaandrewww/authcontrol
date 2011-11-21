@@ -225,6 +225,64 @@ Ltac incl_apps :=
     | [ |- ?H ] => idtac H 
   end.
 
+Lemma incl_app_cons : forall A (l1 l2:list A) (m:A), incl (l1 ++ m :: l2) (m :: l1 ++ l2).
+Proof.
+  intros.
+  apply incl_app.
+  repeat incl_apps.
+  apply incl_cons.
+  apply in_eq.
+  repeat incl_apps.
+Qed.
+
+Lemma incl_app_app : forall A (l1 l2 l3: list A), incl (l1 ++ l3) ((l1 ++ l2) ++ l3).
+Proof.
+  intros.
+  apply incl_app.
+  repeat incl_apps.
+  apply incl_appl.
+  repeat incl_apps.
+  repeat incl_apps.
+Qed.  
+
+Lemma incl_app_app2 : forall A (l1 l2 l3: list A), incl (l1 ++ l3) ((l2 ++ l1) ++ l3).
+Proof.
+  intros.
+  apply incl_app.
+  apply incl_appl.
+  repeat incl_apps.
+  repeat incl_apps.
+Qed.
+
+Lemma incl_app_cons2 : forall A (l1 l2 l3:list A) (m:A), incl (l1 ++ m :: l2) (m :: (l3 ++ l1) ++ l2).
+Proof.
+  intros.
+  apply incl_app.
+  apply incl_tl.
+  apply incl_appl.
+  repeat incl_apps.
+  apply incl_cons.
+  apply in_eq.
+  repeat incl_apps.
+Qed.
+
+Lemma subst_cheat : forall f e p, (subst (subst_simul f e) 0 p = (subst_simul f (Some p :: e))).
+Admitted.
+
+Lemma incl_app_cons3 : forall f e l1 l2 l3 p, incl (l1 ++ (subst (subst_simul f e) 0 p) :: l2) 
+  ((subst_simul f (Some p :: e) :: l3 ++ l1) ++ l2).
+Proof.
+  intros.
+  apply incl_app.
+  apply incl_appl.
+  repeat incl_apps.
+  apply incl_cons.
+  Focus 2.
+  repeat incl_apps.
+  rewrite subst_cheat.
+  apply in_eq.
+Qed.
+
 Lemma incl_cheat : forall A (C1 C2:list A), incl C1 C2.
 Admitted. 
 
@@ -327,7 +385,7 @@ Fixpoint check (g:formula) (e:env) (p:proof) (c:context) : option (axioms p e ++
   (* Weaken_Impl *)
     eapply Weaken_Impl_e.
     eapply (Weaken_e _ (subst_simul f1 e :: axioms p1 e ++ c)) in _H0 ; auto.
-    apply incl_cheat.
+    apply incl_app_cons.
   (* Impl *)
     rewrite _H1 in *.
     rewrite _H2 in *.
@@ -335,39 +393,40 @@ Fixpoint check (g:formula) (e:env) (p:proof) (c:context) : option (axioms p e ++
     eapply (cut_elimination _ (Impl_f (subst_simul pf2 e) (subst_simul f2 e))) ; auto.
     eapply Impl_e.
     eapply (Weaken_e _ ((axioms p1 e ++ axioms p2 e) ++ c)) in _H0 ; auto.
-    apply incl_cheat.
+    apply incl_app_app.
     eapply Init_e.
-    apply incl_cheat.
+    apply incl_app_app2.
    (* Says_Confirms *)
     eapply (Weaken_e _ ((axioms p1 e ++ axioms p2 e) ++ c)) in _H1.
     eapply (cut_elimination _ (Confirms_f (prsubst pr e) (subst_simul f1 e))) ; auto.
     eapply Confirms_e.
     eapply (Weaken_e _ (subst_simul f1 e :: (axioms p1 e ++ axioms p2 e) ++ c)) in _H2 ; auto.
-    apply incl_cheat.
-    apply incl_cheat.
+    apply incl_app_cons2.
+    apply incl_app_app.
   (* Says_Signed *)
     eapply (Weaken_e _ ((axioms p1 e ++ axioms p2 e) ++ c)) in _H1.
     eapply (cut_elimination _ (Signed_f (prsubst pr e) (subst_simul f1 e))) ; auto.
     eapply Signed_e.
     eapply (Weaken_e _ (subst_simul f1 e :: (axioms p1 e ++ axioms p2 e) ++ c)) in _H2 ; auto.
-    apply incl_cheat.
-    apply incl_cheat.
+    apply incl_app_cons2.
+    apply incl_app_app.
   (* Says_Says *)
     eapply (Weaken_e _ ((axioms p1 e ++ axioms p2 e) ++ c)) in _H1.
     eapply (cut_elimination _ (Says_f (prsubst pr e) (subst_simul f1 e))) ; auto.
     eapply Says_e.
     eapply (Weaken_e _ (subst_simul f1 e :: (axioms p1 e ++ axioms p2 e) ++ c)) in _H2 ; auto.
-    apply incl_cheat.
-    apply incl_cheat.
+    apply incl_app_cons2.
+    apply incl_app_app.
   (* Says_Spec *)
     rewrite _H0 in *.
     eapply (Weaken_e _ ((axioms p1 e ++ axioms p2 e) ++ c)) in _H1.
     eapply (cut_elimination _ (Says_f (prsubst pr0 e) (Abs_f (subst_simul f3 (None :: e))))) ; auto.
     eapply (Spec_e _ theP).
     rewrite subst_subst_simul in *.
+    (*| Weaken_e : forall C1 C2 f, C1 |-- f -> incl C1 C2 -> C2 |-- f *)
     eapply (Weaken_e _ (subst_simul f3 (Some theP :: e) :: (axioms p1 e ++ axioms p2 e) ++ c)) in _H2 ; auto.
-    apply incl_cheat.
-    apply incl_cheat.
+    apply incl_app_cons3. (* CHEAT *)
+    apply incl_app_app.
 Defined.
 
 Lemma correctness : forall p g, if check g nil p nil then axioms p nil |-- g else True.
