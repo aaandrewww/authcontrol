@@ -269,18 +269,16 @@ Qed.
 Lemma subst_cheat : forall f e p, (subst (subst_simul f e) 0 p = (subst_simul f (Some p :: e))).
 Admitted.
 
-Lemma incl_app_cons3 : forall f e l1 l2 l3 p, incl (l1 ++ (subst (subst_simul f e) 0 p) :: l2) 
-  ((subst_simul f (Some p :: e) :: l3 ++ l1) ++ l2).
+Lemma incl_app_cons3 : forall A (l1 l2 l3: list A) m, incl (l1 ++ m :: l2) 
+  ((m :: l3 ++ l1) ++ l2).
 Proof.
   intros.
   apply incl_app.
   apply incl_appl.
   repeat incl_apps.
   apply incl_cons.
-  Focus 2.
-  repeat incl_apps.
-  rewrite subst_cheat.
   apply in_eq.
+  repeat incl_apps.
 Qed.
 
 Lemma incl_cheat : forall A (C1 C2:list A), incl C1 C2.
@@ -363,7 +361,7 @@ Fixpoint check (g:formula) (e:env) (p:proof) (c:context) : option (axioms p e ++
                then match proof_goal p1 with
                       | Says_f pr0 (Abs_f f1) => if principal_dec (prsubst pr e) (prsubst pr0 e)
                                                 then if check (Says_f pr0 (Abs_f f1)) e p1 c
-                                                  then if check f e p2 ((subst (subst_simul f1 e) 0 (theP))::c) then Some _ else None
+                                                  then if check f e p2 ((subst_simul f1 ((Some theP)::e))::c) then Some _ else None
                                                   else None
                                                 else None
                       | _ => None
@@ -425,9 +423,15 @@ Fixpoint check (g:formula) (e:env) (p:proof) (c:context) : option (axioms p e ++
     rewrite subst_subst_simul in *.
     (*| Weaken_e : forall C1 C2 f, C1 |-- f -> incl C1 C2 -> C2 |-- f *)
     eapply (Weaken_e _ (subst_simul f3 (Some theP :: e) :: (axioms p1 e ++ axioms p2 e) ++ c)) in _H2 ; auto.
-    apply incl_app_cons3. (* CHEAT *)
+    apply incl_app_cons3.
     apply incl_app_app.
 Defined.
+
+Definition check_bool g e p c :=
+  match check g e p c with
+    | Some _ => true
+    | None => false
+  end.
 
 Lemma correctness : forall p g, if check g nil p nil then axioms p nil |-- g else True.
 Admitted.
@@ -470,7 +474,7 @@ Definition use_delegation (a b c:pcpl) (p:string) (dp ap:proof) :=
   Says_Spec_r (Says_f (Pcpl_p a) (approve c p)) c dp (Tauto_r (Says_f (Pcpl_p a) (approve c p))
     (Impl_r (approve c p) ap (Assump_r (Impl_f (Says_f (Pcpl_p b) (Pred_f p (Pcpl_p c))) (Pred_f p (Pcpl_p c)))))).
 
-Eval simpl in let p := "ok" in
+Eval compute in let p := "ok" in
               let a := "A" in
               let b := "B" in
               let c := "C" in
