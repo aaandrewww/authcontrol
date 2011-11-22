@@ -53,8 +53,6 @@ Fixpoint subst (f:formula) (n:var) (a:pcpl) : formula :=
     | Abs_f f => Abs_f (subst f (n+1) a)
   end.
 
-Definition env := list (option pcpl).
-
 Reserved Notation "c '|--' g" (at level 70).
 
 Inductive entails : context -> formula -> Prop :=
