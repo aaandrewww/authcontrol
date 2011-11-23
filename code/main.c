@@ -3,12 +3,9 @@
 #include <formula.h>
 
 void print_pred(){
-	struct principal prin;
-	prin.prin.pcpl = "A\0";
-	prin.type = PCPL;
-
 	Pred_f pred;
-	pred.principal = &prin;
+	pred.principal.prin.pcpl = "A\0";
+	pred.principal.type = PCPL;
 	pred.pred = "OK\0";
 
 	struct formula f;
@@ -18,24 +15,18 @@ void print_pred(){
 }
 
 void print_impl(){
-	struct principal prin1;
-	prin1.prin.pcpl = "A\0";
-	prin1.type = PCPL;
-
 	Pred_f pred1;
-	pred1.principal = &prin1;
+	pred1.principal.prin.pcpl = "A\0";
+	pred1.principal.type = PCPL;
 	pred1.pred = "OK\0";
 
 	struct formula f1;
 	f1.type = PRED_F;
 	f1.form.pred_f = pred1;
 
-	struct principal prin2;
-	prin2.prin.pcpl = "B\0";
-	prin2.type = PCPL;
-
 	Pred_f pred2;
-	pred2.principal = &prin2;
+	pred2.principal.prin.pcpl = "B\0";
+	pred2.principal.type = PCPL;
 	pred2.pred = "ALRIGHT\0";
 
 	struct formula f2;
@@ -54,12 +45,9 @@ void print_impl(){
 }
 
 void print_signed(){
-	struct principal prin1;
-	prin1.prin.pcpl = "A\0";
-	prin1.type = PCPL;
-
 	Pred_f pred1;
-	pred1.principal = &prin1;
+	pred1.principal.prin.pcpl = "A\0";
+	pred1.principal.type = PCPL;
 	pred1.pred = "OK\0";
 
 	struct formula f1;
@@ -67,7 +55,8 @@ void print_signed(){
 	f1.form.pred_f = pred1;
 
 	Signed_f signed_f;
-	signed_f.pcpl = "B\0";
+	signed_f.principal.prin.pcpl = "B\0";
+	signed_f.principal.type = PCPL;
 	signed_f.formula = &f1;
 
 	struct formula f2;
@@ -78,12 +67,9 @@ void print_signed(){
 }
 
 void print_says(){
-	struct principal prin1;
-	prin1.prin.pcpl = "A\0";
-	prin1.type = PCPL;
-
 	Pred_f pred1;
-	pred1.principal = &prin1;
+	pred1.principal.prin.pcpl = "A\0";
+	pred1.principal.type = PCPL;
 	pred1.pred = "OK\0";
 
 	struct formula f1;
@@ -91,7 +77,8 @@ void print_says(){
 	f1.form.pred_f = pred1;
 
 	Says_f says_f;
-	says_f.pcpl = "B\0";
+	says_f.principal.prin.pcpl = "B\0";
+	says_f.principal.type = PCPL;
 	says_f.formula = &f1;
 
 	struct formula f2;
@@ -102,12 +89,9 @@ void print_says(){
 }
 
 void print_confirms(){
-	struct principal prin1;
-	prin1.prin.pcpl = "A\0";
-	prin1.type = PCPL;
-
 	Pred_f pred1;
-	pred1.principal = &prin1;
+	pred1.principal.prin.pcpl = "A\0";
+	pred1.principal.type = PCPL;
 	pred1.pred = "OK\0";
 
 	struct formula f1;
@@ -115,7 +99,8 @@ void print_confirms(){
 	f1.form.pred_f = pred1;
 
 	Confirms_f confirms_f;
-	confirms_f.pcpl = "B\0";
+	confirms_f.principal.prin.pcpl = "B\0";
+	confirms_f.principal.type = PCPL;
 	confirms_f.formula = &f1;
 
 	struct formula f2;
@@ -126,12 +111,9 @@ void print_confirms(){
 }
 
 void print_abs(){
-	struct principal prin1;
-	prin1.prin.pcpl = "A\0";
-	prin1.type = PCPL;
-
 	Pred_f pred1;
-	pred1.principal = &prin1;
+	pred1.principal.prin.pcpl = "A\0";
+	pred1.principal.type = PCPL;
 	pred1.pred = "OK\0";
 
 	struct formula f1;
