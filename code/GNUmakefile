@@ -24,3 +24,5 @@ prover: $(OBJ)
 
 clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ 
+	rm -rf $(ODIR)
+	rm prover
