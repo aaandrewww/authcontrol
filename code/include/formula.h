@@ -1,17 +1,15 @@
 #ifndef FORMULA_H
 #define FORMULA_H
 
-typedef int bool;
-enum { false, true };
-
-typedef unsigned int uint32_t;
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef uint32_t Var;
 typedef char* Pcpl;
 typedef char* Predicate;
 
-typedef struct principal* Principal;
 typedef struct formula* Formula;
+typedef struct principal Principal;
 typedef struct pred_formula Pred_f;
 typedef struct impl_formula Impl_f;
 typedef struct signed_formula Signed_f;
@@ -52,17 +50,17 @@ struct impl_formula {
 };
 
 struct signed_formula {
-	Pcpl pcpl;
+	Principal principal;
 	Formula formula;
 };
 
 struct says_formula {
-	Pcpl pcpl;
+	Principal principal;
 	Formula formula;
 };
 
 struct confirms_formula {
-	Pcpl pcpl;
+	Principal principal;
 	Formula formula;
 };
 

@@ -10,7 +10,7 @@ LIBS=-lm
 _DEPS = formula.h proof.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o formula.o proof.o 
+_OBJ = formula.o proof.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
