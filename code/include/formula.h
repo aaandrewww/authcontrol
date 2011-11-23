@@ -33,12 +33,12 @@ struct principal{
 };
 
 enum formula_type{
-	PRED,
-	IMPL,
-	SIGNED,
-	SAYS,
-	CONFIRMS,
-	ABS
+	PRED_F,
+	IMPL_F,
+	SIGNED_F,
+	SAYS_F,
+	CONFIRMS_F,
+	ABS_F
 };
 
 struct pred_formula {
