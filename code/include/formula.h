@@ -9,7 +9,7 @@ typedef char* Pcpl;
 typedef char* Predicate;
 
 typedef struct formula* Formula;
-typedef struct principal Principal;
+typedef struct principal* Principal;
 typedef struct pred_formula Pred_f;
 typedef struct impl_formula Impl_f;
 typedef struct signed_formula Signed_f;
