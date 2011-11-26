@@ -2,6 +2,7 @@
 #define PROOF_H
 
 #include <formula.h>
+#define NRULES 		10;
 
 typedef struct proof* Proof;
 typedef struct rule* Rule;
@@ -16,9 +17,9 @@ typedef struct says_signed_rule Says_Signed_r;
 typedef struct says_says_rule Says_Says_r;
 typedef struct says_spec_rule Says_Spec_r;
 
-
 struct proof{
 	Formula goal;
+	// TODO Why is the #define not usable as an index?
 	Rule rules[10];
 };
 
@@ -33,13 +34,6 @@ enum rule_type{
 	SAYS_SIGNED_R,
 	SAYS_SAYS_R,
 	SAYS_SPEC_R
-};
-
-struct rule{
-	enum rule_type type;
-	union {
-
-	} r;
 };
 
 struct signed_rule {
@@ -118,12 +112,25 @@ struct says_spec_rule {
 	Proof pf2;
 };
 
+struct rule{
+	enum rule_type type;
+	union {
+		Signed_r signed_r;
+		Confirms_r confirms_r;
+		Assump_r assump_r;
+		Tauto_r tauto_r;
+		Weaken_Impl_r weaken_impl_r;
+		Impl_r impl_r;
+		Says_Confirms_r says_confirms_r;
+		Says_Signed_r says_signed_r;
+		Says_Says_r says_says_r;
+		Says_Spec_r says_spec_r;
+	} r;
+};
 
 void proof_print(Proof pf);
 bool proof_check(Formula f, Proof pf);
 Proof proof_cp(Proof pf);
 Formula proof_goal(Proof pf);
-
-void test();
 
 #endif

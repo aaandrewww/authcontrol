@@ -33,14 +33,23 @@ Principal principal_subst(Principal prin, Var v, Pcpl p) {
       newp->type = PCPL;
       char *newstring = malloc(strlen(p)+1);
       if (newstring == NULL) {
-	free(newp);
-	return NULL;
+    	  free(newp);
+    	  return NULL;
       }
       newp->prin.pcpl = newstring;
       strcpy(newstring, p);
     } else if (newp->prin.var > v) {
       newp->prin.var = newp->prin.var - 1;
     }
+  } else { // We already have a pcpl
+	  newp->type = PCPL;
+      char *newstring = malloc(strlen(p)+1);
+      if (newstring == NULL) {
+    	  free(newp);
+    	  return NULL;
+      }
+      newp->prin.pcpl = newstring;
+      strcpy(newstring, prin->prin.pcpl);
   }
 
   return newp;
@@ -298,14 +307,82 @@ freenewf:
 
 Formula formula_cp(Formula f) {
   switch (f->type) {
-  case PRED_F: return pred_cp(f->form.pred_f);
-  case IMPL_F: return impl_cp(f->form.impl_f);
-  case SIGNED_F: return signed_cp(f->form.signed_f);
-  case SAYS_F: return says_cp(f->form.says_f);
-  case CONFIRMS_F: return confirms_cp(f->form.confirms_f);
-  case ABS_F: return abs_cp(f->form.abs_f);
-  default: return NULL;
+	  case PRED_F: return pred_cp(f->form.pred_f);
+	  case IMPL_F: return impl_cp(f->form.impl_f);
+	  case SIGNED_F: return signed_cp(f->form.signed_f);
+	  case SAYS_F: return says_cp(f->form.says_f);
+	  case CONFIRMS_F: return confirms_cp(f->form.confirms_f);
+	  case ABS_F: return abs_cp(f->form.abs_f);
+	  default: return NULL;
   }
 }
 
-Formula formula_subst(Formula prin, Var v, Pcpl p);
+Formula formula_subst(Formula f, Var v, Pcpl p) {
+	Formula retf = formula_cp(f);
+	switch (f->type) {
+	case PRED_F:
+		retf->form.pred_f.principal
+			= principal_subst(f->form.pred_f.principal, v, p);
+		if(retf->form.pred_f.principal == NULL) goto freeretf;
+		return retf;
+	case IMPL_F:
+		retf->form.impl_f.formula1
+			= formula_subst(f->form.impl_f.formula1, v, p);
+		if(retf->form.impl_f.formula1 == NULL) goto freeretf;
+
+		retf->form.impl_f.formula2
+			= formula_subst(f->form.impl_f.formula2, v, p);
+		if(retf->form.impl_f.formula2 == NULL){
+			free(retf->form.impl_f.formula1);
+			goto freeretf;
+		}
+		return retf;
+	case SAYS_F:
+		retf->form.says_f.principal
+			= principal_subst(f->form.says_f.principal, v, p);
+		if(retf->form.says_f.principal == NULL) goto freeretf;
+
+		retf->form.says_f.formula
+			= formula_subst(f->form.says_f.formula, v, p);
+		if(retf->form.says_f.formula == NULL){
+			free(retf->form.says_f.principal);
+			goto freeretf;
+		}
+		return retf;
+	case SIGNED_F:
+		retf->form.signed_f.principal
+			= principal_subst(f->form.signed_f.principal, v, p);
+		if(retf->form.signed_f.principal == NULL) goto freeretf;
+
+		retf->form.signed_f.formula
+			= formula_subst(f->form.signed_f.formula, v, p);
+		if(retf->form.signed_f.formula == NULL){
+			free(retf->form.signed_f.principal);
+			goto freeretf;
+		}
+		return retf;
+	case CONFIRMS_F:
+		retf->form.confirms_f.principal
+			= principal_subst(f->form.confirms_f.principal, v, p);
+		if(retf->form.confirms_f.principal == NULL) goto freeretf;
+
+		retf->form.confirms_f.formula
+			= formula_subst(f->form.confirms_f.formula, v, p);
+		if(retf->form.confirms_f.formula == NULL){
+			free(retf->form.confirms_f.principal);
+			goto freeretf;
+		}
+		return retf;
+	case ABS_F:
+		retf->form.abs_f.formula
+			= formula_subst(f->form.abs_f.formula, v+1, p);
+		if(retf->form.abs_f.formula == NULL) goto freeretf;
+		return retf;
+	default:
+		return NULL;
+	}
+
+freeretf:
+	free(retf);
+	return NULL;
+}

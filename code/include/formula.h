@@ -88,6 +88,6 @@ Principal principal_subst(Principal prin, Var v, Pcpl p);
 void formula_print(Formula p);
 bool formula_eq(Formula p1, Formula p2);
 Formula formula_cp(Formula p);
-Formula formula_subst(Formula prin, Var v, Pcpl p);
+Formula formula_subst(Formula f, Var v, Pcpl p);
 
 #endif
