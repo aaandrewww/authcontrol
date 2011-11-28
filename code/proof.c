@@ -516,3 +516,113 @@ void proof_free(Proof p) {
   }
   free(p);
 }
+
+Proof signed_proof(Pcpl sayer, Formula f) {
+  Principal p = principal_pcpl(sayer);
+  Formula goal = formula_signed(p, f);
+  Proof proof = proof_signed(goal);
+  
+  formula_free(goal);
+  free(p);
+  return proof;
+}
+
+Proof says_from_assump(Pcpl sayer, Formula f) {
+  Principal p = principal_pcpl(sayer);
+  Formula goal = formula_says(p, f);
+  Proof assumpp = proof_assump(f);
+  Proof tauto = proof_tauto(goal, assumpp);
+
+  proof_free(assumpp);
+  formula_free(goal);
+  free(p);
+  return tauto;
+}
+
+Proof says_from_signed(Pcpl sayer, Formula f) {
+  Principal p = principal_pcpl(sayer);
+  Formula goal = formula_says(p, f);
+  Proof signedp = signed_proof(sayer,f);
+  Proof assumpp = says_from_assump(sayer,f);
+  Proof sayssigned = proof_says_signed(goal, signedp, assumpp);
+
+  proof_free(assumpp);
+  proof_free(signedp);
+  formula_free(goal);
+  free(p);
+  return sayssigned;
+}
+
+Formula approve(Pcpl pcpl, Predicate pred) {
+  Principal p = principal_pcpl(pcpl);
+  Formula a = formula_pred(pred, p);
+
+  free(p);
+  return a;
+}
+
+Proof approval_from_signed(Pcpl approver, Predicate pred, Pcpl pcpl) {
+  Formula a = approve(pcpl, pred);
+  Proof p = says_from_signed(approver,a);
+
+  formula_free(a);
+  return p;
+}
+
+Formula delegate(Pcpl pcpl, Predicate pred) {
+  Principal v = principal_var(0);
+  Principal p = principal_pcpl(pcpl);
+  Formula predf = formula_pred(pred,v);
+  Formula says = formula_says(p,predf);
+  Formula impl = formula_impl(says,predf);
+  Formula abs = formula_abs(impl);
+
+  formula_free(impl);
+  formula_free(says);
+  formula_free(predf);
+  free(p);
+  free(v);
+  return abs;
+}
+
+Formula delegate_signed(Pcpl a, Pcpl b, Predicate p) {
+  Formula d = delegate(b,p);
+  Principal ap = principal_pcpl(a);
+  Formula signedf = formula_signed(ap,d);
+  free(ap);
+  formula_free(d);
+  return signedf;
+}
+
+Proof delegate_from_signed(Pcpl a, Pcpl b, Predicate p) {
+  Formula delegate = delegate_signed(a,b,p);
+  Proof pf = proof_signed(delegate);
+  free(delegate);
+  return pf;
+}
+
+Proof use_delegation(Pcpl a, Pcpl b, Pcpl c, Predicate p, Proof dpf, Proof apf) {
+  Principal ap = principal_pcpl(a);
+  Principal bp = principal_pcpl(b);
+  Principal cp = principal_pcpl(c);
+  Formula approval = approve(c,p);
+  Formula goal = formula_says(ap,approval);
+  Formula bsays = formula_says(bp,approval);
+  Formula delegation = formula_impl(bsays,approval);
+  Proof assump = proof_assump(delegation);
+  Proof impl = proof_impl(approval, apf, assump);
+  Proof rightside = proof_tauto(goal, impl);
+  Proof final = proof_says_spec(goal, c, dpf, rightside);
+
+  free(ap);
+  free(bp);
+  free(cp);
+  formula_free(approval);
+  formula_free(goal);
+  formula_free(bsays);
+  formula_free(delegation);
+  proof_free(assump);
+  proof_free(impl);
+  proof_free(rightside);
+  return final;
+}
