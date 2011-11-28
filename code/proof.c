@@ -4,11 +4,18 @@
 #include <proof.h>
 #include <formula.h>
 
-void proof_print(Proof pf);
 bool proof_check(Formula f, Proof pf);
 
-Rule rule_cp(Rule r){
-	Rule newr = malloc(sizeof(struct rule));
+void proof_print(Proof pf){
+
+}
+
+void signed_r_print(Proof pf){
+
+}
+
+Proof proof_cp(Proof r){
+	Proof newr = malloc(sizeof(struct proof));
 	if(newr == NULL) return newr;
 	newr->type = r->type;
 
@@ -149,28 +156,29 @@ freenewr:
 	return NULL;
 }
 
-Proof proof_cp(Proof pf){
-	Proof newProof = malloc(sizeof(struct proof));
-	int i, j;
-	uint32_t max = NRULES; // TODO Why is the #define not usable as an loop variable?
-	if (newProof == NULL) return newProof;
-
-	newProof->goal = formula_cp(pf->goal);
-
-	for (i = 0; i < max; ++i) {
-		if(pf->rules[i] == NULL) break;
-		newProof->rules[i] = rule_cp(pf->rules[i]);
-		if(newProof->rules[i] == NULL) {
-			for(j = 0; j < i; j++){
-				free(newProof->rules[j]);
-			}
-			free(newProof);
-			return NULL;
-		}
-	}
-	return newProof;
-}
-
 Formula proof_goal(Proof pf) {
-	return formula_cp(pf->goal);
+	switch(pf->type){
+	case SIGNED_R:
+		return formula_cp(pf->r.signed_r.goal);
+	case CONFIRMS_R:
+		return formula_cp(pf->r.confirms_r.goal);
+	case ASSUMP_R:
+		return formula_cp(pf->r.assump_r.goal);
+	case TAUTO_R:
+		return formula_cp(pf->r.tauto_r.goal);
+	case WEAKEN_IMPL_R:
+		return formula_cp(pf->r.weaken_impl_r.goal);
+	case IMPL_R:
+		return formula_cp(pf->r.impl_r.goal);
+	case SAYS_CONFIRMS_R:
+		return formula_cp(pf->r.says_confirms_r.goal);
+	case SAYS_SIGNED_R:
+		return formula_cp(pf->r.says_signed_r.goal);
+	case SAYS_SAYS_R:
+		return formula_cp(pf->r.says_says_r.goal);
+	case SAYS_SPEC_R:
+		return formula_cp(pf->r.says_spec_r.goal);
+	default:
+		return NULL;
+	}
 }
