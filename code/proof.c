@@ -7,87 +7,87 @@
 bool proof_check(Formula f, Proof pf);
 
 void signed_r_print(Signed_r signed_r){
-	printf("$\\trfrac[\\;signed]{\\rtcheck}{");
+	printf("\\trfrac[\\;signed]{\\rtcheck}{");
 	formula_print(signed_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void confirms_r_print(Confirms_r confirms_r){
-	printf("$\\trfrac[\\;confirms]{\\rtcheck}{");
+	printf("\\trfrac[\\;confirms]{\\rtcheck}{");
 	formula_print(confirms_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void assump_r_print(Assump_r assump_r){
-	printf("$\\trfrac[\\;init]{\\rtcheck}{");
+	printf("\\trfrac[\\;init]{\\rtcheck}{");
 	formula_print(assump_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void tauto_r_print(Tauto_r tauto_r) {
-	printf("$\\trfrac[\\;tauto]{");
+	printf("\\trfrac[\\;tauto]{");
 	proof_print(tauto_r.proof);
 	printf("}{");
 	formula_print(tauto_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void weaken_impl_r_print(Weaken_Impl_r weaken_impl_r){
-	printf("$\\trfrac[\\;weaken impl]{");
+	printf("\\trfrac[\\;weaken impl]{");
 	proof_print(weaken_impl_r.proof);
 	printf("}{");
 	formula_print(weaken_impl_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void impl_r_print(Impl_r impl_r){
-	printf("$\\trfrac[\\;impl]{");
+	printf("\\trfrac[\\;impl]{");
 	proof_print(impl_r.pf1);
 	printf(" \\quad ");
 	proof_print(impl_r.pf2);
 	printf("}{");
 	formula_print(impl_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void says_confirms_r_print(Says_Confirms_r says_confirms_r){
-	printf("$\\trfrac[\\;conf]{");
+	printf("\\trfrac[\\;conf]{");
 	proof_print(says_confirms_r.pf1);
 	printf(" \\quad ");
 	proof_print(says_confirms_r.pf2);
 	printf("}{");
 	formula_print(says_confirms_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void says_signed_r_print(Says_Signed_r says_signed_r){
-	printf("$\\trfrac[\\;sign]{");
+	printf("\\trfrac[\\;sign]{");
 	proof_print(says_signed_r.pf1);
 	printf(" \\quad ");
 	proof_print(says_signed_r.pf2);
 	printf("}{");
 	formula_print(says_signed_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void says_says_r_print(Says_Says_r says_says_r){
-	printf("$\\trfrac[\\;says]{");
+	printf("\\trfrac[\\;says]{");
 	proof_print(says_says_r.pf1);
 	printf(" \\quad ");
 	proof_print(says_says_r.pf2);
 	printf("}{");
 	formula_print(says_says_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void says_spec_r_print(Says_Spec_r says_spec_r){
-	printf("$\\trfrac[\\;spec]{");
+	printf("\\trfrac[\\;spec]{");
 	proof_print(says_spec_r.pf1);
 	printf(" \\quad %u \\quad", says_spec_r.p);
 	proof_print(says_spec_r.pf2);
 	printf("}{");
 	formula_print(says_spec_r.goal);
-	printf("}$");
+	printf("}");
 }
 
 void proof_print(Proof pf){
