@@ -31,25 +31,13 @@ Principal principal_subst(Principal prin, Var v, Pcpl p) {
   if (newp->type == VAR) {
     if (newp->prin.var == v) {
       newp->type = PCPL;
-      char *newstring = malloc(strlen(p)+1);
-      if (newstring == NULL) {
-    	  free(newp);
-    	  return NULL;
-      }
-      newp->prin.pcpl = newstring;
-      strcpy(newstring, p);
+      newp->prin.pcpl = prin->prin.pcpl;
     } else if (newp->prin.var > v) {
       newp->prin.var = newp->prin.var - 1;
     }
   } else { // We already have a pcpl
 	  newp->type = PCPL;
-      char *newstring = malloc(strlen(p)+1);
-      if (newstring == NULL) {
-    	  free(newp);
-    	  return NULL;
-      }
-      newp->prin.pcpl = newstring;
-      strcpy(newstring, prin->prin.pcpl);
+      newp->prin.pcpl = prin->prin.pcpl;
   }
 
   return newp;

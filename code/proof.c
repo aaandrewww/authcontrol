@@ -11,7 +11,7 @@ void proof_print(Proof pf){
 }
 
 void signed_r_print(Proof pf){
-
+	printf("$\trfrac[\;signed]{\rtcheck}{\sign{A}{F}}$ \hfil");
 }
 
 Proof proof_cp(Proof r){

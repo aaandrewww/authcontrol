@@ -5,8 +5,8 @@
 #include <stdbool.h>
 
 typedef uint32_t Var;
-typedef char* Pcpl;
-typedef char* Predicate;
+typedef uint32_t Pcpl;
+typedef uint32_t Predicate;
 
 typedef struct formula* Formula;
 typedef struct principal* Principal;
