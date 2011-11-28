@@ -393,13 +393,126 @@ freep:
 }
 
 Proof proof_says_signed(Formula goal, Proof proof1, Proof proof2) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = SAYS_SIGNED_R;
+  p->r.says_signed_r.goal = formula_cp(goal);
+  if (p->r.says_signed_r.goal == NULL) goto freep;
+
+  p->r.says_signed_r.pf1 = proof_cp(proof1);
+  if (p->r.says_signed_r.pf1 == NULL) goto freegoal;
+
+  p->r.says_signed_r.pf2 = proof_cp(proof2);
+  if (p->r.says_signed_r.pf2 == NULL) goto freeproof1;
+
+  return p;
+
+freeproof1:
+  free(p->r.says_signed_r.pf1);
+freegoal:
+  free(p->r.says_signed_r.goal);
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_says_says(Formula goal, Proof proof1, Proof proof2) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = SAYS_SAYS_R;
+  p->r.says_says_r.goal = formula_cp(goal);
+  if (p->r.says_says_r.goal == NULL) goto freep;
+
+  p->r.says_says_r.pf1 = proof_cp(proof1);
+  if (p->r.says_says_r.pf1 == NULL) goto freegoal;
+
+  p->r.says_says_r.pf2 = proof_cp(proof2);
+  if (p->r.says_says_r.pf2 == NULL) goto freeproof1;
+
+  return p;
+
+freeproof1:
+  free(p->r.says_says_r.pf1);
+freegoal:
+  free(p->r.says_says_r.goal);
+freep:
+  free(p);
+  return NULL;
 }
 
-Proof proof_says_spec(Formula goal, Pcpl p, Proof proof1, Proof proof2) {
+Proof proof_says_spec(Formula goal, Pcpl pcpl, Proof proof1, Proof proof2) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = SAYS_SPEC_R;
+  p->r.says_spec_r.goal = formula_cp(goal);
+  if (p->r.says_spec_r.goal == NULL) goto freep;
+
+  p->r.says_spec_r.p = pcpl;
+
+  p->r.says_spec_r.pf1 = proof_cp(proof1);
+  if (p->r.says_spec_r.pf1 == NULL) goto freegoal;
+
+  p->r.says_spec_r.pf2 = proof_cp(proof2);
+  if (p->r.says_spec_r.pf2 == NULL) goto freeproof1;
+
+  return p;
+
+freeproof1:
+  free(p->r.says_says_r.pf1);
+freegoal:
+  free(p->r.says_says_r.goal);
+freep:
+  free(p);
+  return NULL;
+}
+
+void proof_free(Proof p) {
+  switch (p->type){
+  case SIGNED_R:
+    formula_free(p->r.signed_r.goal);
+    break;
+  case CONFIRMS_R:
+    formula_free(p->r.assump_r.goal);
+    break;
+  case ASSUMP_R:
+    formula_free(p->r.assump_r.goal);
+    break;
+  case TAUTO_R:
+    formula_free(p->r.tauto_r.goal);
+    proof_free(p->r.tauto_r.proof);
+    break;
+  case WEAKEN_IMPL_R:
+    formula_free(p->r.weaken_impl_r.goal);
+    proof_free(p->r.weaken_impl_r.proof);
+    break;
+  case IMPL_R:
+    formula_free(p->r.impl_r.goal);
+    proof_free(p->r.impl_r.pf1);
+    proof_free(p->r.impl_r.pf2);
+    break;
+  case SAYS_CONFIRMS_R:
+    formula_free(p->r.says_confirms_r.goal);
+    proof_free(p->r.says_confirms_r.pf1);
+    proof_free(p->r.says_confirms_r.pf2);
+    break;
+  case SAYS_SIGNED_R:
+    formula_free(p->r.says_signed_r.goal);
+    proof_free(p->r.says_signed_r.pf1);
+    proof_free(p->r.says_signed_r.pf2);
+    break;
+  case SAYS_SAYS_R:
+    formula_free(p->r.says_says_r.goal);
+    proof_free(p->r.says_says_r.pf1);
+    proof_free(p->r.says_says_r.pf2);
+    break;
+  case SAYS_SPEC_R:
+    formula_free(p->r.says_spec_r.goal);
+    proof_free(p->r.says_spec_r.pf1);
+    proof_free(p->r.says_spec_r.pf2);
+    break;
+  }
+  free(p);
 }

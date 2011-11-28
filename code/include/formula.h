@@ -90,6 +90,8 @@ bool formula_eq(Formula p1, Formula p2);
 Formula formula_cp(Formula p);
 Formula formula_subst(Formula f, Var v, Pcpl p);
 
+void formula_free(Formula f);
+
 // Constructors
 Principal principal_pcpl(Pcpl pcpl);
 Principal principal_var(Var var);
