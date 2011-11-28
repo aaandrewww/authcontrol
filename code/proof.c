@@ -182,3 +182,44 @@ Formula proof_goal(Proof pf) {
 		return NULL;
 	}
 }
+
+// Constructor
+Proof proof_signed(Formula goal) {
+
+}
+
+Proof proof_confirms(Formula goal) {
+
+}
+
+Proof proof_assump(Formula goal) {
+
+}
+
+Proof proof_tauto(Formula goal, Proof proof) {
+
+}
+
+Proof proof_weaken_impl(Formula goal, Proof proof) {
+
+}
+
+Proof proof_impl(Formula goal, Proof proof1, Proof proof2) {
+
+}
+
+Proof proof_says_confirms(Formula goal, Proof proof1, Proof proof2) {
+
+}
+
+Proof proof_says_signed(Formula goal, Proof proof1, Proof proof2) {
+
+}
+
+Proof proof_says_says(Formula goal, Proof proof1, Proof proof2) {
+
+}
+
+Proof proof_says_spec(Formula goal, Pcpl p, Proof proof1, Proof proof2) {
+
+}

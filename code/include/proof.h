@@ -125,4 +125,16 @@ bool proof_check(Formula f, Proof pf);
 Proof proof_cp(Proof pf);
 Formula proof_goal(Proof pf);
 
+// Constructors
+Proof proof_signed(Formula goal);
+Proof proof_confirms(Formula goal);
+Proof proof_assump(Formula goal);
+Proof proof_tauto(Formula goal, Proof proof);
+Proof proof_weaken_impl(Formula goal, Proof proof);
+Proof proof_impl(Formula goal, Proof proof1, Proof proof2);
+Proof proof_says_confirms(Formula goal, Proof proof1, Proof proof2);
+Proof proof_says_signed(Formula goal, Proof proof1, Proof proof2);
+Proof proof_says_says(Formula goal, Proof proof1, Proof proof2);
+Proof proof_says_spec(Formula goal, Pcpl p, Proof proof1, Proof proof2);
+
 #endif
