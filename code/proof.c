@@ -6,12 +6,104 @@
 
 bool proof_check(Formula f, Proof pf);
 
-void proof_print(Proof pf){
-
+void signed_r_print(Signed_r signed_r){
+	printf("$\\trfrac[\\;signed]{\\rtcheck}{");
+	formula_print(signed_r.goal);
+	printf("}$");
 }
 
-void signed_r_print(Proof pf){
-	printf("$\trfrac[\;signed]{\rtcheck}{\sign{A}{F}}$ \hfil");
+void confirms_r_print(Confirms_r confirms_r){
+	printf("$\\trfrac[\\;confirms]{\\rtcheck}{");
+	formula_print(confirms_r.goal);
+	printf("}$");
+}
+
+void assump_r_print(Assump_r assump_r){
+	printf("$\\trfrac[\\;init]{\\rtcheck}{");
+	formula_print(assump_r.goal);
+	printf("}$");
+}
+
+void tauto_r_print(Tauto_r tauto_r) {
+	printf("$\\trfrac[\\;tauto]{");
+	proof_print(tauto_r.proof);
+	printf("}{");
+	formula_print(tauto_r.goal);
+	printf("}$");
+}
+
+void weaken_impl_r_print(Weaken_Impl_r weaken_impl_r){
+	printf("$\\trfrac[\\;weaken impl]{");
+	proof_print(weaken_impl_r.proof);
+	printf("}{");
+	formula_print(weaken_impl_r.goal);
+	printf("}$");
+}
+
+void impl_r_print(Impl_r impl_r){
+	printf("$\\trfrac[\\;impl]{");
+	proof_print(impl_r.pf1);
+	printf(" \\quad ");
+	proof_print(impl_r.pf2);
+	printf("}{");
+	formula_print(impl_r.goal);
+	printf("}$");
+}
+
+void says_confirms_r_print(Says_Confirms_r says_confirms_r){
+	printf("$\\trfrac[\\;conf]{");
+	proof_print(says_confirms_r.pf1);
+	printf(" \\quad ");
+	proof_print(says_confirms_r.pf2);
+	printf("}{");
+	formula_print(says_confirms_r.goal);
+	printf("}$");
+}
+
+void says_signed_r_print(Says_Signed_r says_signed_r){
+	printf("$\\trfrac[\\;sign]{");
+	proof_print(says_signed_r.pf1);
+	printf(" \\quad ");
+	proof_print(says_signed_r.pf2);
+	printf("}{");
+	formula_print(says_signed_r.goal);
+	printf("}$");
+}
+
+void says_says_r_print(Says_Says_r says_says_r){
+	printf("$\\trfrac[\\;says]{");
+	proof_print(says_says_r.pf1);
+	printf(" \\quad ");
+	proof_print(says_says_r.pf2);
+	printf("}{");
+	formula_print(says_says_r.goal);
+	printf("}$");
+}
+
+void says_spec_r_print(Says_Spec_r says_spec_r){
+	printf("$\\trfrac[\\;spec]{");
+	proof_print(says_spec_r.pf1);
+	printf(" \\quad %u \\quad", says_spec_r.p);
+	proof_print(says_spec_r.pf2);
+	printf("}{");
+	formula_print(says_spec_r.goal);
+	printf("}$");
+}
+
+void proof_print(Proof pf){
+	  switch (pf->type) {
+	  case SIGNED_R: signed_r_print(pf->r.signed_r); return;
+	  case CONFIRMS_R: confirms_r_print(pf->r.confirms_r); return;
+	  case ASSUMP_R: assump_r_print(pf->r.assump_r); return;
+	  case TAUTO_R: tauto_r_print(pf->r.tauto_r); return;
+	  case WEAKEN_IMPL_R: weaken_impl_r_print(pf->r.weaken_impl_r); return;
+	  case IMPL_R: impl_r_print(pf->r.impl_r); return;
+	  case SAYS_CONFIRMS_R: says_confirms_r_print(pf->r.says_confirms_r); return;
+	  case SAYS_SIGNED_R: says_signed_r_print(pf->r. says_signed_r); return;
+	  case SAYS_SAYS_R: says_says_r_print(pf->r.says_says_r); return;
+	  case SAYS_SPEC_R: says_spec_r_print(pf->r.says_spec_r); return;
+	  default: printf("FORMULA UNDEFINED"); return;
+	  }
 }
 
 Proof proof_cp(Proof r){
@@ -124,24 +216,16 @@ Proof proof_cp(Proof r){
 		newr->r.says_spec_r.goal = formula_cp(r->r.says_spec_r.goal);
 		if(newr->r.says_spec_r.goal == NULL) goto freenewr;
 
-	    char *newstring = malloc(strlen(r->r.says_spec_r.p)+1);
-	    if (newstring == NULL) {
-	    	free(newr->r.says_spec_r.goal);
-	    	goto freenewr;
-	    }
-		newr->r.says_spec_r.p = newstring;
-		strcpy(newstring, r->r.says_spec_r.p);
+		newr->r.says_spec_r.p = r->r.says_spec_r.p;
 
 		newr->r.says_spec_r.pf1 = proof_cp(r->r.says_spec_r.pf1);
 		if(newr->r.says_spec_r.pf1 == NULL){
-			free(newstring);
 			free(newr->r.says_spec_r.goal);
 			goto freenewr;
 		}
 
 		newr->r.says_spec_r.pf2 = proof_cp(r->r.says_spec_r.pf2);
 		if(newr->r.says_spec_r.pf2 == NULL){
-			free(newstring);
 			free(newr->r.says_spec_r.pf1);
 			free(newr->r.says_spec_r.goal);
 			goto freenewr;
@@ -158,27 +242,16 @@ freenewr:
 
 Formula proof_goal(Proof pf) {
 	switch(pf->type){
-	case SIGNED_R:
-		return formula_cp(pf->r.signed_r.goal);
-	case CONFIRMS_R:
-		return formula_cp(pf->r.confirms_r.goal);
-	case ASSUMP_R:
-		return formula_cp(pf->r.assump_r.goal);
-	case TAUTO_R:
-		return formula_cp(pf->r.tauto_r.goal);
-	case WEAKEN_IMPL_R:
-		return formula_cp(pf->r.weaken_impl_r.goal);
-	case IMPL_R:
-		return formula_cp(pf->r.impl_r.goal);
-	case SAYS_CONFIRMS_R:
-		return formula_cp(pf->r.says_confirms_r.goal);
-	case SAYS_SIGNED_R:
-		return formula_cp(pf->r.says_signed_r.goal);
-	case SAYS_SAYS_R:
-		return formula_cp(pf->r.says_says_r.goal);
-	case SAYS_SPEC_R:
-		return formula_cp(pf->r.says_spec_r.goal);
-	default:
-		return NULL;
+	case SIGNED_R: return formula_cp(pf->r.signed_r.goal);
+	case CONFIRMS_R: return formula_cp(pf->r.confirms_r.goal);
+	case ASSUMP_R: return formula_cp(pf->r.assump_r.goal);
+	case TAUTO_R: return formula_cp(pf->r.tauto_r.goal);
+	case WEAKEN_IMPL_R: return formula_cp(pf->r.weaken_impl_r.goal);
+	case IMPL_R: return formula_cp(pf->r.impl_r.goal);
+	case SAYS_CONFIRMS_R: return formula_cp(pf->r.says_confirms_r.goal);
+	case SAYS_SIGNED_R: return formula_cp(pf->r.says_signed_r.goal);
+	case SAYS_SAYS_R: return formula_cp(pf->r.says_says_r.goal);
+	case SAYS_SPEC_R:return formula_cp(pf->r.says_spec_r.goal);
+	default: return NULL;
 	}
 }
