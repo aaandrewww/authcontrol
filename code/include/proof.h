@@ -125,6 +125,8 @@ bool proof_check(Formula f, Proof pf);
 Proof proof_cp(Proof pf);
 Formula proof_goal(Proof pf);
 
+void proof_free(Proof pf);
+
 // Constructors
 Proof proof_signed(Formula goal);
 Proof proof_confirms(Formula goal);

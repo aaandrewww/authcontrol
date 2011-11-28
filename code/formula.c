@@ -497,3 +497,31 @@ freenewf:
   free(newf);
   return NULL;
 }
+
+void formula_free(Formula f) {
+  switch (f->type) {
+  case PRED_F:
+    free(f->form.pred_f.principal);
+    break;
+  case IMPL_F:
+    formula_free(f->form.impl_f.formula1);
+    formula_free(f->form.impl_f.formula2);
+    break;
+  case SAYS_F:
+    free(f->form.says_f.principal);
+    formula_free(f->form.says_f.formula);
+    break;
+  case SIGNED_F:
+    free(f->form.signed_f.principal);
+    formula_free(f->form.signed_f.formula);
+    break;
+  case CONFIRMS_F:
+    free(f->form.confirms_f.principal);
+    formula_free(f->form.confirms_f.formula);
+    break;
+  case ABS_F:
+    formula_free(f->form.abs_f.formula);
+    break;
+  }
+  free(f);
+}
