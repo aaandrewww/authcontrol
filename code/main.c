@@ -183,6 +183,15 @@ void print_says_spec(){
 	proof_print(says_spec);
 }
 
+void print_delegation() {
+  Proof dpf = delegate_from_signed(A,B,OK);
+  Proof apf = approval_from_signed(B,OK,C);
+  Proof delegation = use_delegation(A,B,C,OK,dpf,apf);
+  proof_print(delegation);
+  proof_free(delegation);
+  proof_free(apf);
+  proof_free(dpf);
+}
 
 int main()
 {
@@ -219,6 +228,8 @@ int main()
 	print_says_says();
 	printf("\n");
 	print_says_spec();
+	printf("\n");
+	print_delegation();
 	printf("\n");
 	return 0;
 }
