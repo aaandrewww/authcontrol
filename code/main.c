@@ -8,161 +8,49 @@
 #define ALRIGHT 100
 
 void print_pred(){
-        struct principal pcpl;
-	pcpl.type = PCPL;
-	pcpl.prin.pcpl = A;
-
-	Pred_f pred;
-	pred.principal = &pcpl;
-	pred.pred = OK;
-
-	struct formula f;
-	f.type = PRED_F;
-	f.form.pred_f = pred;
-	formula_print(&f);
+  Principal pcpl = principal_pcpl(A);
+  Formula pred = formula_pred(OK, pcpl);
+  formula_print(pred);
 }
 
 void print_impl(){
-        struct principal pcpl1;
-	pcpl1.type = PCPL;
-	pcpl1.prin.pcpl = A;
-
-	Pred_f pred1;
-	pred1.principal = &pcpl1;
-	pred1.pred = OK;
-
-	struct formula f1;
-	f1.type = PRED_F;
-	f1.form.pred_f = pred1;
-
-        struct principal pcpl2;
-	pcpl2.type = PCPL;
-	pcpl2.prin.pcpl = B;
-
-	Pred_f pred2;
-	pred2.principal = &pcpl2;
-	pred2.pred = ALRIGHT;
-
-	struct formula f2;
-	f2.type = PRED_F;
-	f2.form.pred_f = pred2;
-
-	Impl_f impl;
-	impl.formula1 = &f1;
-	impl.formula2 = &f2;
-
-	struct formula f;
-	f.type = IMPL_F;
-	f.form.impl_f = impl;
-
-	formula_print(&f);
+  Principal pcpl1 = principal_pcpl(A);
+  Formula f1 = formula_pred(OK,pcpl1);
+  Principal pcpl2 = principal_pcpl(B);
+  Formula f2 = formula_pred(ALRIGHT,pcpl2);
+  Formula impl = formula_impl(f1,f2);
+  formula_print(impl);
 }
 
 void print_signed(){
-        struct principal pcpl1;
-	pcpl1.prin.pcpl = A;
-	pcpl1.type = PCPL;
-
-	Pred_f pred1;
-	pred1.principal = &pcpl1;
-	pred1.pred = OK;
-
-	struct formula f1;
-	f1.type = PRED_F;
-	f1.form.pred_f = pred1;
-
-	struct principal pcpl2;
-	pcpl2.prin.pcpl = B;
-	pcpl2.type = PCPL;
-
-	Signed_f signed_f;
-	signed_f.principal = &pcpl2;
-	signed_f.formula = &f1;
-
-	struct formula f2;
-	f2.type = SIGNED_F;
-	f2.form.signed_f = signed_f;
-
-	formula_print(&f2);
+  Principal pcpl1 = principal_pcpl(A);
+  Formula f1 = formula_pred(OK,pcpl1);
+  Principal pcpl2 = principal_pcpl(B);
+  Formula signedf = formula_signed(pcpl2, f1);
+  formula_print(signedf);
 }
 
 void print_says(){
-        struct principal pcpl1;
-	pcpl1.prin.pcpl = A;
-	pcpl1.type = PCPL;
-	
-	Pred_f pred1;
-	pred1.principal = &pcpl1;
-	pred1.pred = OK;
-
-	struct formula f1;
-	f1.type = PRED_F;
-	f1.form.pred_f = pred1;
-
-	struct principal pcpl2;
-	pcpl2.prin.pcpl = B;
-	pcpl2.type = PCPL;
-
-	Says_f says_f;
-	says_f.principal = &pcpl2;
-	says_f.formula = &f1;
-
-	struct formula f2;
-	f2.type = SAYS_F;
-	f2.form.says_f = says_f;
-
-	formula_print(&f2);
+  Principal pcpl1 = principal_pcpl(A);
+  Formula f1 = formula_pred(OK,pcpl1);
+  Principal pcpl2 = principal_pcpl(B);
+  Formula says = formula_says(pcpl2, f1);
+  formula_print(says);
 }
 
 void print_confirms(){
-        struct principal pcpl1;
-	pcpl1.prin.pcpl = A;
-	pcpl1.type = PCPL;
-
-	Pred_f pred1;
-	pred1.principal = &pcpl1;
-	pred1.pred = OK;
-
-	struct formula f1;
-	f1.type = PRED_F;
-	f1.form.pred_f = pred1;
-
-	struct principal pcpl2;
-	pcpl2.prin.pcpl = B;
-	pcpl2.type = PCPL;
-
-	Confirms_f confirms_f;
-	confirms_f.principal = &pcpl2;
-	confirms_f.formula = &f1;
-
-	struct formula f2;
-	f2.type = CONFIRMS_F;
-	f2.form.confirms_f = confirms_f;
-
-	formula_print(&f2);
+  Principal pcpl1 = principal_pcpl(A);
+  Formula f1 = formula_pred(OK,pcpl1);
+  Principal pcpl2 = principal_pcpl(B);
+  Formula conf = formula_confirms(pcpl2, f1);
+  formula_print(conf);
 }
 
 void print_abs(){
-        struct principal pcpl1;
-	pcpl1.prin.pcpl = A;
-	pcpl1.type = PCPL;
-
-	Pred_f pred1;
-	pred1.principal = &pcpl1;
-	pred1.pred = OK;
-
-	struct formula f1;
-	f1.type = PRED_F;
-	f1.form.pred_f = pred1;
-
-	Abs_f abs_f;
-	abs_f.formula = &f1;
-
-	struct formula f2;
-	f2.type = ABS_F;
-	f2.form.abs_f = abs_f;
-
-	formula_print(&f2);
+  Principal pcpl1 = principal_var(0);
+  Formula f1 = formula_pred(OK,pcpl1);
+  Formula abs = formula_abs(f1);
+  formula_print(abs);
 }
 
 int main()

@@ -90,4 +90,15 @@ bool formula_eq(Formula p1, Formula p2);
 Formula formula_cp(Formula p);
 Formula formula_subst(Formula f, Var v, Pcpl p);
 
+// Constructors
+Principal principal_pcpl(Pcpl pcpl);
+Principal principal_var(Var var);
+
+Formula formula_pred(Predicate predicate, Principal principal);
+Formula formula_impl(Formula f1, Formula f2);
+Formula formula_signed(Principal p, Formula f);
+Formula formula_says(Principal p, Formula f);
+Formula formula_confirms(Principal p, Formula f);
+Formula formula_abs(Formula f);
+
 #endif

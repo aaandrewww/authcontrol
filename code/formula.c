@@ -3,6 +3,8 @@
 #include <string.h>
 #include <formula.h>
 
+
+
 bool principal_eq(Principal p1, Principal p2) {
   switch (p1->type) {
   case VAR:
@@ -367,4 +369,89 @@ Formula formula_subst(Formula f, Var v, Pcpl p) {
 freeretf:
 	free(retf);
 	return NULL;
+}
+
+Principal principal_pcpl(Pcpl pcpl) {
+  Principal newp = malloc(sizeof(struct principal));
+  if (newp == NULL) return newp;
+
+  newp->type = PCPL;
+  newp->prin.pcpl = pcpl;
+
+  return newp;
+}
+
+Principal principal_var(Var var) {
+  Principal newp = malloc(sizeof(struct principal));
+  if (newp == NULL) return newp;
+
+  newp->type = VAR;
+  newp->prin.var = var;
+
+  return newp;
+}
+
+Formula formula_pred(Predicate predicate, Principal principal) {
+  Formula newf = malloc(sizeof(struct formula));
+  if (newf == NULL) return newf;
+
+  newf->type = PRED_F;
+  newf->form.pred_f.pred = predicate;
+  newf->form.pred_f.principal = principal;
+
+  return newf;
+}
+
+Formula formula_impl(Formula f1, Formula f2) {
+  Formula newf = malloc(sizeof(struct formula));
+  if (newf == NULL) return newf;
+
+  newf->type = IMPL_F;
+  newf->form.impl_f.formula1 = f1;
+  newf->form.impl_f.formula2 = f2;
+
+  return newf;
+}
+
+Formula formula_signed(Principal p, Formula f) {
+  Formula newf = malloc(sizeof(struct formula));
+  if (newf == NULL) return newf;
+
+  newf->type = SIGNED_F;
+  newf->form.signed_f.principal = p;
+  newf->form.signed_f.formula = f;
+
+  return newf;
+}
+
+Formula formula_says(Principal p, Formula f) {
+  Formula newf = malloc(sizeof(struct formula));
+  if (newf == NULL) return newf;
+
+  newf->type = SAYS_F;
+  newf->form.says_f.principal = p;
+  newf->form.says_f.formula = f;
+
+  return newf;
+}
+
+Formula formula_confirms(Principal p, Formula f) {
+  Formula newf = malloc(sizeof(struct formula));
+  if (newf == NULL) return newf;
+
+  newf->type = CONFIRMS_F;
+  newf->form.confirms_f.principal = p;
+  newf->form.confirms_f.formula = f;
+
+  return newf;
+}
+
+Formula formula_abs(Formula f) {
+  Formula newf = malloc(sizeof(struct formula));
+  if (newf == NULL) return newf;
+
+  newf->type = ABS_F;
+  newf->form.abs_f.formula = f;
+
+  return newf;
 }
