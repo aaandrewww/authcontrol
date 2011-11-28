@@ -8,7 +8,7 @@ bool principal_eq(Principal p1, Principal p2) {
   case VAR:
     return ((p2->type == VAR) && (p1->prin.var == p2->prin.var));
   case PCPL:
-    return ((p2->type == PCPL) && (strcmp(p1->prin.pcpl, p2->prin.pcpl) == 0));
+    return ((p2->type == PCPL) && (p1->prin.pcpl == p2->prin.pcpl));
   default:
     return false;
   }
@@ -36,8 +36,8 @@ Principal principal_subst(Principal prin, Var v, Pcpl p) {
       newp->prin.var = newp->prin.var - 1;
     }
   } else { // We already have a pcpl
-	  newp->type = PCPL;
-      newp->prin.pcpl = prin->prin.pcpl;
+    newp->type = PCPL;
+    newp->prin.pcpl = prin->prin.pcpl;
   }
 
   return newp;
@@ -49,7 +49,7 @@ void principal_print(Principal prin) {
       printf("v_{%u}", prin->prin.var);
       break;
   case PCPL: 
-      printf("%s", prin->prin.pcpl);
+      printf("%u", prin->prin.pcpl);
       break;
   default:
       printf("UNDEFINED");
@@ -57,7 +57,7 @@ void principal_print(Principal prin) {
 }
 
 void pred_print(Pred_f pred) {
-  printf("\\pred{%s}{", pred.pred);
+  printf("\\pred{%u}{", pred.pred);
   principal_print(pred.principal);
   printf("}");
 }
@@ -115,7 +115,7 @@ void formula_print(Formula f){
 bool pred_eq(Pred_f p1, Formula f) {
   if (f->type != PRED_F) return false;
   Pred_f p2 = f->form.pred_f;
-  return principal_eq(p1.principal,p2.principal) && (strcmp(p1.pred,p2.pred) == 0);
+  return principal_eq(p1.principal,p2.principal) && (p1.pred == p2.pred);
 }
 
 bool impl_eq(Impl_f i1, Formula f) {
@@ -165,20 +165,14 @@ Formula pred_cp(Pred_f p) {
   if (newf == NULL) return newf;
 
   newf->type = PRED_F;
-
-  char *newstring = malloc(strlen(p.pred)+1);
-  if (newstring == NULL) goto freenewf;
-  newf->form.pred_f.pred = newstring;
-  strcpy(newstring,p.pred);
+  newf->form.pred_f.pred = p.pred;
 
   Principal newPrin = principal_cp(p.principal);
-  if (newPrin == NULL) goto freenewstring;
+  if (newPrin == NULL) goto freenewf;
   newf->form.pred_f.principal = newPrin;
 
   return newf;
 
-freenewstring:
-  free(newstring);
 freenewf:
   free(newf);
   return NULL;
