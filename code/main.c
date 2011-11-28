@@ -57,6 +57,10 @@ void print_abs(){
 void print_signed_p(){
   Principal pcpl = principal_pcpl(A);
   Formula pred = formula_pred(OK, pcpl);
+
+  Principal pcpl2 = principal_pcpl(B);
+  Formula f2 = formula_signed(pcpl2, pred);
+
   Proof signedp = proof_signed(pred);
   proof_print(signedp);
 }
@@ -110,7 +114,7 @@ void print_impl_p(){
 	Proof assump1 = proof_assump(f1);
 	Proof assump2 = proof_assump(impl);
 
-	Proof impl_p = proof_impl(f1, assump1, assump2);
+	Proof impl_p = proof_impl(f2, assump1, assump2);
 	proof_print(impl_p);
 }
 
