@@ -258,31 +258,138 @@ Formula proof_goal(Proof pf) {
 
 // Constructor
 Proof proof_signed(Formula goal) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = SIGNED_R;
+  p->r.signed_r.goal = formula_cp(goal);
+  if (p->r.signed_r.goal == NULL) goto freep;
+
+  return p;
+
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_confirms(Formula goal) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = CONFIRMS_R;
+  p->r.confirms_r.goal = formula_cp(goal);
+  if (p->r.confirms_r.goal == NULL) goto freep;
+
+  return p;
+
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_assump(Formula goal) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = ASSUMP_R;
+  p->r.assump_r.goal = formula_cp(goal);
+  if (p->r.assump_r.goal == NULL) goto freep;
+
+  return p;
+
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_tauto(Formula goal, Proof proof) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = TAUTO_R;
+  p->r.tauto_r.goal = formula_cp(goal);
+  if (p->r.tauto_r.goal == NULL) goto freep;
+
+  p->r.tauto_r.proof = proof_cp(proof);
+  if (p->r.tauto_r.proof == NULL) goto freegoal;
+
+  return p;
+
+freegoal:
+  free(p->r.tauto_r.goal);
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_weaken_impl(Formula goal, Proof proof) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = WEAKEN_IMPL_R;
+  p->r.weaken_impl_r.goal = formula_cp(goal);
+  if (p->r.weaken_impl_r.goal == NULL) goto freep;
+
+  p->r.weaken_impl_r.proof = proof_cp(proof);
+  if (p->r.weaken_impl_r.proof == NULL) goto freegoal;
+
+  return p;
+
+freegoal:
+  free(p->r.weaken_impl_r.goal);
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_impl(Formula goal, Proof proof1, Proof proof2) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = IMPL_R;
+  p->r.impl_r.goal = formula_cp(goal);
+  if (p->r.impl_r.goal == NULL) goto freep;
+
+  p->r.impl_r.pf1 = proof_cp(proof1);
+  if (p->r.impl_r.pf1 == NULL) goto freegoal;
+
+  p->r.impl_r.pf2 = proof_cp(proof2);
+  if (p->r.impl_r.pf2 == NULL) goto freeproof1;
+
+  return p;
+
+freeproof1:
+  free(p->r.impl_r.pf1);
+freegoal:
+  free(p->r.impl_r.goal);
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_says_confirms(Formula goal, Proof proof1, Proof proof2) {
+  Proof p = malloc(sizeof(struct proof));
+  if (p == NULL) return p;
 
+  p->type = SAYS_CONFIRMS_R;
+  p->r.says_confirms_r.goal = formula_cp(goal);
+  if (p->r.says_confirms_r.goal == NULL) goto freep;
+
+  p->r.says_confirms_r.pf1 = proof_cp(proof1);
+  if (p->r.says_confirms_r.pf1 == NULL) goto freegoal;
+
+  p->r.says_confirms_r.pf2 = proof_cp(proof2);
+  if (p->r.says_confirms_r.pf2 == NULL) goto freeproof1;
+
+  return p;
+
+freeproof1:
+  free(p->r.says_confirms_r.pf1);
+freegoal:
+  free(p->r.says_confirms_r.goal);
+freep:
+  free(p);
+  return NULL;
 }
 
 Proof proof_says_signed(Formula goal, Proof proof1, Proof proof2) {
