@@ -397,9 +397,14 @@ Formula formula_pred(Predicate predicate, Principal principal) {
 
   newf->type = PRED_F;
   newf->form.pred_f.pred = predicate;
-  newf->form.pred_f.principal = principal;
+  newf->form.pred_f.principal = principal_cp(principal);
+  if (newf->form.pred_f.principal == NULL) goto freenewf;
 
   return newf;
+
+freenewf:
+  free(newf);
+  return NULL;
 }
 
 Formula formula_impl(Formula f1, Formula f2) {
@@ -407,10 +412,18 @@ Formula formula_impl(Formula f1, Formula f2) {
   if (newf == NULL) return newf;
 
   newf->type = IMPL_F;
-  newf->form.impl_f.formula1 = f1;
-  newf->form.impl_f.formula2 = f2;
+  newf->form.impl_f.formula1 = formula_cp(f1);
+  if (newf->form.impl_f.formula1 == NULL) goto freenewf;
+  newf->form.impl_f.formula2 = formula_cp(f2);
+  if (newf->form.impl_f.formula2 == NULL) goto freef1;
 
   return newf;
+
+freef1:
+  free(newf->form.impl_f.formula1);
+freenewf:
+  free(newf);
+  return NULL;
 }
 
 Formula formula_signed(Principal p, Formula f) {
@@ -418,10 +431,18 @@ Formula formula_signed(Principal p, Formula f) {
   if (newf == NULL) return newf;
 
   newf->type = SIGNED_F;
-  newf->form.signed_f.principal = p;
-  newf->form.signed_f.formula = f;
+  newf->form.signed_f.principal = principal_cp(p);
+  if (newf->form.signed_f.principal == NULL) goto freenewf;
+  newf->form.signed_f.formula = formula_cp(f);
+  if (newf->form.signed_f.formula == NULL) goto freenewp;
 
   return newf;
+
+freenewp:
+  free(newf->form.signed_f.principal);
+freenewf:
+  free(newf);
+  return NULL;
 }
 
 Formula formula_says(Principal p, Formula f) {
@@ -429,10 +450,18 @@ Formula formula_says(Principal p, Formula f) {
   if (newf == NULL) return newf;
 
   newf->type = SAYS_F;
-  newf->form.says_f.principal = p;
-  newf->form.says_f.formula = f;
+  newf->form.says_f.principal = principal_cp(p);
+  if (newf->form.says_f.principal == NULL) goto freenewf;
+  newf->form.says_f.formula = formula_cp(f);
+  if (newf->form.says_f.formula == NULL) goto freenewp;
 
   return newf;
+
+freenewp:
+  free(newf->form.says_f.principal);
+freenewf:
+  free(newf);
+  return NULL;
 }
 
 Formula formula_confirms(Principal p, Formula f) {
@@ -440,10 +469,18 @@ Formula formula_confirms(Principal p, Formula f) {
   if (newf == NULL) return newf;
 
   newf->type = CONFIRMS_F;
-  newf->form.confirms_f.principal = p;
-  newf->form.confirms_f.formula = f;
+  newf->form.confirms_f.principal = principal_cp(p);
+  if (newf->form.confirms_f.principal == NULL) goto freenewf;
+  newf->form.confirms_f.formula = formula_cp(f);
+  if (newf->form.confirms_f.formula == NULL) goto freenewp;
 
   return newf;
+
+freenewp:
+  free(newf->form.confirms_f.principal);
+freenewf:
+  free(newf);
+  return NULL;
 }
 
 Formula formula_abs(Formula f) {
@@ -451,7 +488,12 @@ Formula formula_abs(Formula f) {
   if (newf == NULL) return newf;
 
   newf->type = ABS_F;
-  newf->form.abs_f.formula = f;
+  newf->form.abs_f.formula = formula_cp(f);
+  if (newf->form.abs_f.formula == NULL) goto freenewf;
 
   return newf;
+
+freenewf:
+  free(newf);
+  return NULL;
 }
