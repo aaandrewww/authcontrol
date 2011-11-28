@@ -595,9 +595,9 @@ Formula delegate_signed(Pcpl a, Pcpl b, Predicate p) {
 }
 
 Proof delegate_from_signed(Pcpl a, Pcpl b, Predicate p) {
-  Formula delegate = delegate_signed(a,b,p);
-  Proof pf = proof_signed(delegate);
-  free(delegate);
+  Formula d = delegate(b,p);
+  Proof pf = says_from_signed(a,d);
+  free(d);
   return pf;
 }
 

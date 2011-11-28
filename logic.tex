@@ -2,6 +2,7 @@
 
 %AMS-TeX packages
 \usepackage{amssymb,amsmath,amsthm,amssymb}
+\usepackage{pdflscape}
 %geometry (sets margin) and other useful packages
 \usepackage[margin=1.25in]{geometry}
 \usepackage{graphicx,ctable,booktabs}
@@ -117,5 +118,14 @@ $\trfrac[\;conf]{\confirms{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}
 $\trfrac[\;says]{\says{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \hfil
 $\trfrac[\;spec]{\says{A}{(\abs{F_1})} \quad p \quad \says{A}{F_2} \with{F_1\subst{p}{x}}}{\says{A}{F_2}}$
 }
+
+\begin{landscape}
+\section{Examples}
+
+{
+\center
+$\trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{0}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}{\says{0}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}}{\says{0}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad 2 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{1}{\pred{99}{2}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{99}{2}}}{\says{1}{\pred{99}{2}}}}{\says{1}{\pred{99}{2}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{1}{\pred{99}{2}}}{\pred{99}{2}}}}{\pred{99}{2}}}{\says{0}{\pred{99}{2}}}}{\says{0}{\pred{99}{2}}}$
+}
+\end{landscape}
 
 \end{document}
