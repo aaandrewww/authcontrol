@@ -243,9 +243,9 @@ Fixpoint check (g:formula) (p:proof) (c:context) : option (axioms p ++ c |-- g).
               then let pg1 := proof_goal p1
                     in if check pg1 p1 c
                          then match proof_goal p2 with
-                                | Impl_f f3 pf => if formula_dec pg1 f3
-                                                     then if formula_dec pf f
-                                                           then if check (Impl_f f3 pf) p2 c then Some _ else None
+                                | Impl_f f3 f4 => if formula_dec pg1 f3
+                                                     then if formula_dec f4 f
+                                                           then if check (Impl_f f3 f4) p2 c then Some _ else None
                                                            else None
                                                      else None
                                 | _ => None
