@@ -4,7 +4,183 @@
 #include <proof.h>
 #include <formula.h>
 
-bool proof_check(Formula f, Proof pf);
+bool formula_goal_check(Formula formula, Formula goal, Proof pf){
+	if(!(formula_eq(formula, goal))){
+		printf("ERROR: formula does not match goal \n");
+		printf("Formula:\n");
+		formula_print(formula);
+		printf("\n");
+		printf("Proof:\n");
+		proof_print(pf);
+		printf("\n");
+		return false;
+	}
+	return true;
+}
+
+bool proof_check(Formula f, Proof pf){
+	Proof p1;
+	Proof p2;
+	Formula pg1;
+
+
+	// Check if the formula is the same as the proof goal
+	if(!( formula_goal_check(f, proof_goal(pf), pf) ))
+		return false;
+
+	switch (pf->type) {
+	case SIGNED_R:
+		if(f->type != SIGNED_F)
+			goto invalid_proof;
+		return true;
+	case CONFIRMS_R:
+		if(f->type != CONFIRMS_F)
+			goto invalid_proof;
+		return true;
+	case TAUTO_R:
+		if(f->type != SAYS_F)
+			goto invalid_proof;
+		return proof_check(f->form.says_f.formula, pf->r.tauto_r.proof);
+	case WEAKEN_IMPL_R:
+		if(f->type != IMPL_F)
+			goto invalid_proof;
+		// TODO Check the proof in the context with f1 added
+		return proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof);
+	case IMPL_R:
+		p1 = pf->r.impl_r.pf1;
+		pg1 = proof_goal(p1);
+
+		// Check that we have a valid proof of the implicant
+		if(!( proof_check(pg1, p1) ))
+			return false;
+
+		// Check that pf2 is a proof of f1->f2
+		p2 = pf->r.impl_r.pf2;
+		Formula impl = proof_goal(p2);
+		if(impl->type != IMPL_F)
+			goto invalid_proof;
+
+		// impl = f3->f4
+		Formula f3 = impl->form.impl_f.formula1;
+		Formula f4 = impl->form.impl_f.formula2;
+
+		// The goal of the first proof is the implicant
+		if(!( formula_goal_check(f3, pg1, p1) ))
+			goto invalid_proof;
+
+		// The checked formula is the implicand
+		if(!( formula_eq(f4, f) ))
+			goto invalid_proof;
+
+		// Check the proof of the implication
+		return proof_check(impl, p2);
+	case SAYS_CONFIRMS_R:
+		if(f->type != SAYS_F)
+			goto invalid_proof;
+
+		p1 = pf->r.says_confirms_r.pf1;
+		p2 = pf->r.says_confirms_r.pf2;
+		pg1 = proof_goal(p1);
+		// The first proof is proof of Confirms
+		if(pg1->type != CONFIRMS_F)
+			goto invalid_proof;
+
+		// The principal in the Says is the same as the one in Confirms
+		if(!( principal_eq(f->form.says_f.principal, pg1->form.confirms_f.principal) ))
+			goto invalid_proof;
+
+		// Check that the first proof is valid
+		if(! proof_check( pg1, p1) )
+			return false;
+
+		// TODO Check the proof in the context with f1 added
+		return proof_check(f, p2);
+	case SAYS_SIGNED_R:
+		if(f->type != SAYS_F)
+			goto invalid_proof;
+
+		p1 = pf->r.says_signed_r.pf1;
+		p2 = pf->r.says_signed_r.pf2;
+		pg1 = proof_goal(p1);
+		// The first proof is proof of Signed
+		if(pg1->type != SIGNED_F)
+			goto invalid_proof;
+
+		// The principal in the Says is the same as the one in Signed
+		if(!( principal_eq(f->form.says_f.principal, pg1->form.signed_f.principal) ))
+			goto invalid_proof;
+
+		// Check that the first proof is valid
+		if(! proof_check( pg1, p1) )
+			return false;
+
+		// TODO Check the proof in the context with f1 added
+		return proof_check(f, p2);
+	case SAYS_SAYS_R:
+		if(f->type != SAYS_F)
+			goto invalid_proof;
+
+		p1 = pf->r.says_says_r.pf1;
+		p2 = pf->r.says_says_r.pf2;
+		pg1 = proof_goal(p1);
+		// The first proof is proof of Says
+		if(pg1->type != SAYS_F)
+			goto invalid_proof;
+
+		// The principal in the Says is the same as the one in the other Says
+		if(!( principal_eq(f->form.says_f.principal, pg1->form.says_f.principal) ))
+			goto invalid_proof;
+
+		// Check that the first proof is valid
+		if(! proof_check( pg1, p1) )
+			return false;
+
+		// TODO Check the proof in the context with f1 added
+		return proof_check(f, p2);
+	case SAYS_SPEC_R:
+		if(f->type != SAYS_F)
+			goto invalid_proof;
+
+		p1 = pf->r.says_says_r.pf1;
+		p2 = pf->r.says_says_r.pf2;
+		pg1 = proof_goal(p1);
+		// The first proof is proof of Says
+		if(pg1->type != SAYS_F)
+			goto invalid_proof;
+
+		// The Formula in Says is an abstraction
+		if(pg1->form.says_f.formula->type != ABS_F)
+			goto invalid_proof;
+
+		// The principal in the Says is the same as the one in the Says Abstraction
+		if(!( principal_eq(f->form.says_f.principal, pg1->form.says_f.principal) ))
+			goto invalid_proof;
+
+		// The first proof is valid
+		if(!( proof_check(pg1, p1) ))
+			return false;
+
+		// TODO Check the proof in the context with f1[p/0] added
+		return proof_check(f, p2);
+
+	case ASSUMP_R:
+		// TODO Check if f is in the context
+		return true;
+	default:
+		printf("PROOF TYPE UNDEFINED IN CHECKER");
+		return false;
+	}
+
+invalid_proof:
+	printf("ERROR: invalid proof\n");
+	printf("Formula:\n");
+	formula_print(f);
+	printf("\n");
+	printf("Proof:\n");
+	proof_print(pf);
+	printf("\n");
+	return false;
+}
 
 void signed_r_print(Signed_r signed_r){
 	printf("\\trfrac[\\;signed]{\\rtcheck}{");
@@ -102,7 +278,7 @@ void proof_print(Proof pf){
 	  case SAYS_SIGNED_R: says_signed_r_print(pf->r. says_signed_r); return;
 	  case SAYS_SAYS_R: says_says_r_print(pf->r.says_says_r); return;
 	  case SAYS_SPEC_R: says_spec_r_print(pf->r.says_spec_r); return;
-	  default: printf("FORMULA UNDEFINED"); return;
+	  default: printf("PROOF TYPE UNDEFINED"); return;
 	  }
 }
 
