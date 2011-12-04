@@ -240,12 +240,12 @@ Fixpoint check (g:formula) (p:proof) (c:context) : option (axioms p ++ c |-- g).
             if formula_dec f (Impl_f f1 f2) then if check f2 p1 (f1::c) then Some _ else None else None
         | Impl_r f2 p1 p2 => 
             if formula_dec f f2
-              then let pf1 := proof_goal p1
-                    in if check pf1 p1 c
+              then let pg1 := proof_goal p1
+                    in if check pg1 p1 c
                          then match proof_goal p2 with
-                                | Impl_f pf2 pf => if formula_dec pf1 pf2
+                                | Impl_f f3 pf => if formula_dec pg1 f3
                                                      then if formula_dec pf f
-                                                           then if check (Impl_f pf2 pf) p2 c then Some _ else None
+                                                           then if check (Impl_f f3 pf) p2 c then Some _ else None
                                                            else None
                                                      else None
                                 | _ => None
@@ -316,7 +316,7 @@ Fixpoint check (g:formula) (p:proof) (c:context) : option (axioms p ++ c |-- g).
   (* Impl *)
     rewrite _H2 in *.
     eapply (Weaken_e _ ((axioms p1 ++ axioms p2) ++ c)) in _H4 ; auto.
-    eapply (cut_elimination _ (Impl_f pf2 f2)) ; auto.
+    eapply (cut_elimination _ (Impl_f f3 f2)) ; auto.
     eapply Impl_e.
     eapply (Weaken_e _ ((axioms p1 ++ axioms p2) ++ c)) in _H1 ; auto.
     apply incl_app_app.
