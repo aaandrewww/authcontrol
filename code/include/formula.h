@@ -17,67 +17,66 @@ typedef struct says_formula Says_f;
 typedef struct confirms_formula Confirms_f;
 typedef struct abs_formula Abs_f;
 
-enum prin_type{
-	VAR,
-	PCPL
+enum prin_type {
+  VAR, PCPL
 };
 
-struct principal{
-	enum prin_type type;
-	union {
-	Var var;
-	Pcpl pcpl;
-	} prin;
+struct principal {
+  enum prin_type type;
+  union {
+    Var var;
+    Pcpl pcpl;
+  } prin;
 };
 
-enum formula_type{
-	PRED_F,
-	IMPL_F,
-	SIGNED_F,
-	SAYS_F,
-	CONFIRMS_F,
-	ABS_F
+enum formula_type {
+  PRED_F,
+  IMPL_F,
+  SIGNED_F,
+  SAYS_F,
+  CONFIRMS_F,
+  ABS_F
 };
 
 struct pred_formula {
-	Predicate pred;
-	Principal principal;
+  Predicate pred;
+  Principal principal;
 };
 
 struct impl_formula {
-	Formula formula1;
-	Formula formula2;
+  Formula formula1;
+  Formula formula2;
 };
 
 struct signed_formula {
-	Principal principal;
-	Formula formula;
+  Principal principal;
+  Formula formula;
 };
 
 struct says_formula {
-	Principal principal;
-	Formula formula;
+  Principal principal;
+  Formula formula;
 };
 
 struct confirms_formula {
-	Principal principal;
-	Formula formula;
+  Principal principal;
+  Formula formula;
 };
 
 struct abs_formula {
-	Formula formula;
+  Formula formula;
 };
 
-struct formula{
-	enum formula_type type;
-	union {
-		Pred_f pred_f;
-		Impl_f impl_f;
-		Signed_f signed_f;
-		Says_f says_f;
-		Confirms_f confirms_f;
-		Abs_f abs_f;
-	} form;
+struct formula {
+  enum formula_type type;
+  union {
+    Pred_f pred_f;
+    Impl_f impl_f;
+    Signed_f signed_f;
+    Says_f says_f;
+    Confirms_f confirms_f;
+    Abs_f abs_f;
+  } form;
 };
 
 void principal_print(Principal p);
