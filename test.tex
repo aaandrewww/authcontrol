@@ -1,0 +1,97 @@
+\documentclass[10pt]{article}
+
+%AMS-TeX packages
+\usepackage{amssymb,amsmath,amsthm,amssymb}
+\usepackage{pdflscape}
+%geometry (sets margin) and other useful packages
+\usepackage[margin=1.25in]{geometry}
+\usepackage{graphicx,ctable,booktabs}
+\usepackage{verbatim}
+
+%
+%Fancy-header package to modify header/page numbering 
+%
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+%\addtolength{\headwidth}{\marginparsep} %these change header-rule width
+%\addtolength{\headwidth}{\marginparwidth}
+\lhead{CS 261 Project Proposal}
+\chead{} 
+\rhead{\thepage} 
+\lfoot{\small Andrew Johnson and Scott Moore} 
+\cfoot{} 
+\rfoot{\footnotesize CS 261 Project Proposal} 
+\renewcommand{\headrulewidth}{.3pt} 
+\renewcommand{\footrulewidth}{.3pt}
+\setlength\voffset{-0.25in}
+\setlength\textheight{648pt}
+
+\usepackage[square,numbers]{natbib}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{trfrac}
+\newcommand{\sign}[2]{\ensuremath{#1\;\textsf{signed}\;#2}}
+\newcommand{\imp}[2]{\ensuremath{#1 \rightarrow #2}}
+\newcommand{\says}[2]{\ensuremath{#1\;\textsf{says}\;#2}}
+\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{confirms}\;#2}}
+\newcommand{\ctxt}[0]{\ensuremath{\Gamma}}
+\newcommand{\nil}[0]{\ensuremath{\cdot}}
+\newcommand{\bnfsep}[0]{\ensuremath{\quad\mid\quad}}
+\newcommand{\entails}[2]{\ensuremath{#1 \vdash #2}}
+\newcommand{\pred}[2]{\ensuremath{\textsc{#1}(#2)}}
+\newcommand{\subst}[2]{\ensuremath{[#1/#2]}}
+\newcommand{\abs}[1]{\ensuremath{\forall x:\;#1}}
+\newcommand{\rtcheck}[0]{\ensuremath{\textsf{Runtime check}}}
+\newcommand{\with}[1]{\ensuremath{\;(\text{with } #1)}}
+
+\begin{document}
+$ 
+\text{Principal } 1 == A \\ 
+\text{Principal } 2 == B \\ 
+\text{Principal } 3 == C \\ 
+\text{Principal } 4 == D \\ 
+\text{Principal } 5 == E \\ 
+\text{Principal } 6 == F \\ 
+\text{Principal } 7 == G \\ 
+\text{Predicate } 99 == OK \\ 
+\text{Predicate } 100 == ALRIGHT \\ 
+\pred{99}{1} \\\\ 
+\imp{\pred{99}{1}}{\pred{100}{2}} \\\\ 
+\sign{2}{\pred{99}{1}} \\\\ 
+\says{2}{\pred{99}{1}} \\\\ 
+\confirms{2}{\pred{99}{1}} \\\\ 
+\abs{\pred{99}{v_{0}}} \\\\ 
+\text{Loading context} \\ 
+12345678 \\ 
+Stack is full
+\\ 
+ \text{Printing context} \\ 
+\pred{99}{7} \\ 
+\pred{100}{6} \\ 
+\pred{99}{5} \\ 
+\pred{100}{4} \\ 
+\pred{99}{3} \\ 
+\pred{100}{2} \\ 
+\pred{99}{1} \\ 
+Stack is empty
+\\ 
+ \text{Context empty?} \\ 
+ \\\\ 
+\trfrac[\;signed]{\rtcheck}{\sign{2}{\pred{99}{1}}} \\\\\\\\ 
+\trfrac[\;confirms]{\rtcheck}{\confirms{2}{\pred{99}{1}}} \\\\\\\\ 
+\trfrac[\;init]{\rtcheck}{\pred{99}{1}} \\\\\\\\ 
+\trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{99}{1}}}{\says{2}{\pred{99}{1}}} \\\\\\\\ 
+\trfrac[\;weaken impl]{\trfrac[\;init]{\rtcheck}{\pred{99}{1}}}{\imp{\pred{99}{1}}{\pred{100}{2}}} \\\\\\\\ 
+\trfrac[\;impl]{\trfrac[\;init]{\rtcheck}{\pred{99}{1}} \quad \trfrac[\;init]{\rtcheck}{\imp{\pred{99}{1}}{\pred{100}{2}}}}{\pred{100}{2}} \\\\\\\\ 
+\trfrac[\;conf]{\trfrac[\;confirms]{\rtcheck}{\pred{100}{2}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
+\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\pred{100}{2}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
+\trfrac[\;says]{\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
+\trfrac[\;spec]{\trfrac[\;init]{\rtcheck}{\says{1}{\abs{\pred{99}{1}}}} \quad 3 \quad\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}}}{\says{1}{\pred{100}{2}}} \\\\\\\\ 
+$ 
+\begin{landscape} 
+\pagestyle{empty}
+\small
+ $\trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{1}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}{\says{1}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}}{\says{1}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad 3 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{2}{\pred{99}{3}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{99}{3}}}{\says{2}{\pred{99}{3}}}}{\says{2}{\pred{99}{3}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{2}{\pred{99}{3}}}{\pred{99}{3}}}}{\pred{99}{3}}}{\says{1}{\pred{99}{3}}}}{\says{1}{\pred{99}{3}}}$ 
+ \end{landscape} 
+\end{document}

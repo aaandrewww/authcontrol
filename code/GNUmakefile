@@ -7,10 +7,10 @@ LDIR =./lib
 
 LIBS=-lm
 
-_DEPS = formula.h proof.h
+_DEPS = formula.h proof.h context.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = formula.o proof.o main.o 
+_OBJ = formula.o proof.o context.o main.o 
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
