@@ -12,9 +12,10 @@ struct context {
   Formula *contextData;
 };
 
-void push(Context c, Formula f);
+int push(Context c, Formula f);
 Formula pop(Context c);
 Context context_alloc(uint32_t size);
 void context_free();
+Context context_cp(Context c);
 
 #endif /* CONTEXT_H_ */

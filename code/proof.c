@@ -3,6 +3,7 @@
 #include <string.h>
 #include <proof.h>
 #include <formula.h>
+#include <context.h>
 
 bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
   if (!(formula_eq(formula, goal))) {
@@ -18,10 +19,11 @@ bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
   return true;
 }
 
-bool proof_check(Formula f, Proof pf) {
+bool proof_check(Formula f, Proof pf, Context c) {
   Proof p1;
   Proof p2;
   Formula pg1;
+  int flag;
 
   // Check if the formula is the same as the proof goal
   if (!(formula_goal_check(f, proof_goal(pf), pf)))
@@ -39,18 +41,21 @@ bool proof_check(Formula f, Proof pf) {
   case TAUTO_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
-    return proof_check(f->form.says_f.formula, pf->r.tauto_r.proof);
+    return proof_check(f->form.says_f.formula, pf->r.tauto_r.proof, c);
   case WEAKEN_IMPL_R:
     if (f->type != IMPL_F)
       goto invalid_proof;
-    // TODO Check the proof in the context with f1 added
-    return proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof);
+    // Check the proof with f1 added to the context
+    flag = push(c, f->form.impl_f.formula2);
+    if (flag < 0)
+      return false;
+    return proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof, c);
   case IMPL_R:
     p1 = pf->r.impl_r.pf1;
     pg1 = proof_goal(p1);
 
     // Check that we have a valid proof of the implicant
-    if (!(proof_check(pg1, p1)))
+    if (!(proof_check(pg1, p1, c)))
       return false;
 
     // Check that pf2 is a proof of f1->f2
@@ -72,7 +77,7 @@ bool proof_check(Formula f, Proof pf) {
       goto invalid_proof;
 
     // Check the proof of the implication
-    return proof_check(impl, p2);
+    return proof_check(impl, p2, c);
   case SAYS_CONFIRMS_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -89,11 +94,12 @@ bool proof_check(Formula f, Proof pf) {
       goto invalid_proof;
 
     // Check that the first proof is valid
-    if (!proof_check(pg1, p1))
+    if (!proof_check(pg1, p1, c))
       return false;
 
-    // TODO Check the proof in the context with f1 added
-    return proof_check(f, p2);
+    // Check the proof in the context with f1 added
+    flag = push(c, pg1->form.confirms_f.formula);
+    return proof_check(f, p2, c);
   case SAYS_SIGNED_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -110,11 +116,12 @@ bool proof_check(Formula f, Proof pf) {
       goto invalid_proof;
 
     // Check that the first proof is valid
-    if (!proof_check(pg1, p1))
+    if (!proof_check(pg1, p1, c))
       return false;
 
-    // TODO Check the proof in the context with f1 added
-    return proof_check(f, p2);
+    // Check the proof in the context with f1 added
+    flag = push(c, pg1->form.signed_f.formula);
+    return proof_check(f, p2, c);
   case SAYS_SAYS_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -131,17 +138,18 @@ bool proof_check(Formula f, Proof pf) {
       goto invalid_proof;
 
     // Check that the first proof is valid
-    if (!proof_check(pg1, p1))
+    if (!proof_check(pg1, p1, c))
       return false;
 
-    // TODO Check the proof in the context with f1 added
-    return proof_check(f, p2);
+    // Check the proof in the context with f1 added
+    flag = push(c, pg1->form.says_f.formula);
+    return proof_check(f, p2, c);
   case SAYS_SPEC_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
 
-    p1 = pf->r.says_says_r.pf1;
-    p2 = pf->r.says_says_r.pf2;
+    p1 = pf->r.says_spec_r.pf1;
+    p2 = pf->r.says_spec_r.pf2;
     pg1 = proof_goal(p1);
     // The first proof is proof of Says
     if (pg1->type != SAYS_F)
@@ -156,15 +164,18 @@ bool proof_check(Formula f, Proof pf) {
       goto invalid_proof;
 
     // The first proof is valid
-    if (!(proof_check(pg1, p1)))
+    if (!(proof_check(pg1, p1, c)))
       return false;
 
-    // TODO Check the proof in the context with f1[p/0] added
-    return proof_check(f, p2);
+    // Check the proof with f1[p/0] added to the context
+    Pcpl pcpl = pf->r.says_spec_r.p;
+    Formula f1 = pg1->form.says_f.formula->form.abs_f.formula;
+    Formula f1_subst = formula_subst(f1, 0, pcpl);
+    push(c, f1);
+    return proof_check(f, p2, c);
 
   case ASSUMP_R:
-    // TODO Check if f is in the context
-    return true;
+    return member(c, f);
   default:
     printf("PROOF TYPE UNDEFINED IN CHECKER");
     return false;

@@ -2,6 +2,7 @@
 #define PROOF_H
 
 #include <formula.h>
+#include <context.h>
 
 typedef struct proof* Proof;
 typedef struct signed_rule Signed_r;
@@ -121,7 +122,7 @@ struct proof {
 };
 
 void proof_print(Proof pf);
-bool proof_check(Formula f, Proof pf);
+bool proof_check(Formula f, Proof pf, Context c);
 Proof proof_cp(Proof pf);
 Formula proof_goal(Proof pf);
 

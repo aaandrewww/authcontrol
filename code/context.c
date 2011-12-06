@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <context.h>
 
-void push(Context c, Formula f) {
+int push(Context c, Formula f) {
   if (c->topOfContext == c->size) {
     printf("Stack is full\n");
-    return;
+    return -1;
   }
   c->contextData[c->topOfContext] = f;
   c->topOfContext++;
+  return 0;
 }
 
 Formula pop(Context c) {
@@ -38,3 +39,29 @@ void context_free(Context c) {
   free(c);
 }
 
+bool member(Context c, Formula f){
+  Formula ftemp;
+  Context ctemp = context_cp(c);
+  ftemp = pop(ctemp);
+
+  while(ftemp){
+    if(formula_eq(f, ftemp)){
+      context_free(ctemp);
+      return true;
+    }
+    pop(ctemp);
+  }
+  context_free(ctemp);
+  return false;
+}
+
+Context context_cp(Context c){
+  Context cret = context_alloc(c->size);
+  int i = 0;
+
+  while(i < c->topOfContext){
+    cret->contextData[i] = formula_cp(c->contextData[i]);
+    i++;
+  }
+  return cret;
+}

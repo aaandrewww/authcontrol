@@ -261,7 +261,7 @@ void print_context() {
   printf("\\\\ \n \\text{Context empty?} \\\\ \n");
 }
 
-int main() {
+void printall(){
   printf("$ \n");
   printf("\\text{Principal } 1 == A \\\\ \n");
   printf("\\text{Principal } 2 == B \\\\ \n");
@@ -310,5 +310,9 @@ int main() {
   printf("\\begin{landscape} \n $");
   print_delegation();
   printf("$ \n \\end{landscape} \n ");
+}
+
+int main() {
+  printall();
   return 0;
 }
