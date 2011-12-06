@@ -30,13 +30,10 @@ Principal principal_subst(Principal prin, Var v, Pcpl p) {
   if (newp->type == VAR) {
     if (newp->prin.var == v) {
       newp->type = PCPL;
-      newp->prin.pcpl = prin->prin.pcpl;
+      newp->prin.pcpl = p;
     } else if (newp->prin.var > v) {
       newp->prin.var = newp->prin.var - 1;
     }
-  } else { // We already have a pcpl
-    newp->type = PCPL;
-    newp->prin.pcpl = prin->prin.pcpl;
   }
 
   return newp;

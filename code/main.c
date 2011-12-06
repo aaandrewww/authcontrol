@@ -261,7 +261,7 @@ void print_context() {
   printf("\\\\ \n \\text{Context empty?} \\\\ \n");
 }
 
-void printall(){
+void printall() {
   printf("$ \n");
   printf("\\text{Principal } 1 == A \\\\ \n");
   printf("\\text{Principal } 2 == B \\\\ \n");
@@ -312,7 +312,279 @@ void printall(){
   printf("$ \n \\end{landscape} \n ");
 }
 
+void test_principal_eq() {
+  Principal p1;
+  Principal p2;
+  bool b;
+
+  p1 = principal_pcpl(A);
+  p2 = principal_pcpl(A);
+  b = principal_eq(p1, p2);
+  printf("Equal pcpl: 1 == %u\n", b);
+
+  p1 = principal_pcpl(A);
+  p2 = principal_pcpl(B);
+  b = principal_eq(p1, p2);
+  printf("Unequal pcpl: 0 == %u\n", b);
+
+  p1 = principal_var(0);
+  p2 = principal_var(0);
+  b = principal_eq(p1, p2);
+  printf("Equal var: 1 == %u\n", b);
+
+  p1 = principal_var(0);
+  p2 = principal_var(1);
+  b = principal_eq(p1, p2);
+  printf("Unqual var: 0 == %u\n", b);
+
+  p1 = principal_pcpl(A);
+  p2 = principal_var(0);
+  b = principal_eq(p1, p2);
+  printf("Unqual pcpl and var: 0 == %u\n", b);
+
+  p2 = principal_pcpl(A);
+  p1 = principal_var(0);
+  b = principal_eq(p1, p2);
+  printf("Unqual var and pcpl: 0 == %u\n", b);
+}
+
+void test_principal_cp() {
+  Principal p1;
+  Principal p2;
+  bool b;
+
+  p1 = principal_pcpl(A);
+  p2 = principal_cp(p1);
+  b = principal_eq(p1, p2);
+  printf("Copy pcpl: 1 == %u\n", b);
+
+  p1 = principal_var(0);
+  p2 = principal_cp(p1);
+  b = principal_eq(p1, p2);
+  printf("Copy var: 1 == %u\n", b);
+}
+
+void test_principal_subst() {
+  Principal p1;
+  Principal p2;
+  Principal p3;
+  bool b;
+  Var v0 = 0;
+  Var v1 = 1;
+  Pcpl pcpl1 = A;
+  Pcpl pcpl2 = B;
+
+  p1 = principal_pcpl(pcpl1);
+  p2 = principal_subst(p1, v0, pcpl2);
+  b = principal_eq(p1, p2);
+  printf("Subst pcpl: 1 == %u\n", b);
+  printf("Before: ");
+  principal_print(p1);
+  printf("\n");
+  printf("After: ");
+  principal_print(p2);
+  printf("\n");
+
+  p1 = principal_var(v0);
+  p2 = principal_subst(p1, v0, pcpl1);
+  p3 = principal_pcpl(pcpl1);
+  b = principal_eq(p2, p3);
+  printf("Subst correct var: 1 == %u\n", b);
+  printf("Before: ");
+  principal_print(p1);
+  printf("\n");
+  printf("After: ");
+  principal_print(p2);
+  printf("\n");
+
+  p1 = principal_var(v0);
+  p2 = principal_subst(p1, v1, pcpl1);
+  b = principal_eq(p1, p2);
+  printf("Subst bigger var: 1 == %u\n", b);
+  printf("Before: ");
+  principal_print(p1);
+  printf("\n");
+  printf("After: ");
+  principal_print(p2);
+  printf("\n");
+
+  p1 = principal_var(v1);
+  p2 = principal_subst(p1, v0, pcpl1);
+  p3 = principal_var(v0);
+  b = principal_eq(p2, p3);
+  printf("Subst smaller var: 1 == %u\n", b);
+  printf("Before: ");
+  principal_print(p1);
+  printf("\n");
+  printf("After: ");
+  principal_print(p2);
+  printf("\n");
+}
+
+void test_formula_eq() {
+  Formula f1;
+  Formula f2;
+  Formula f3;
+  Formula f4;
+  Formula f5;
+  Formula f6;
+  Predicate pred1 = OK;
+  Predicate pred2 = ALRIGHT;
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  bool b;
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_pred(pred1, prinA);
+  b = formula_eq(f1, f2);
+  printf("Pred equal: 1 == %u\n", b);
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_pred(pred2, prinA);
+  b = formula_eq(f1, f2);
+  printf("Pred unequal: 0 == %u\n", b);
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_pred(pred1, prinB);
+  b = formula_eq(f1, f2);
+  printf("Pred unequal: 0 == %u\n", b);
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_pred(pred2, prinB);
+  f3 = formula_impl(f1, f2);
+  f4 = formula_pred(pred1, prinA);
+  f5 = formula_pred(pred2, prinB);
+  f6 = formula_impl(f4, f5);
+  b = formula_eq(f3, f6);
+  printf("Impl equal: 1 == %u\n", b);
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_pred(pred2, prinB);
+  f4 = formula_pred(pred1, prinA);
+  f5 = formula_pred(pred2, prinB);
+
+  f3 = formula_impl(f1, f4);
+  f6 = formula_impl(f4, f5);
+  b = formula_eq(f3, f6);
+  printf("Impl unequal: 0 == %u\n", b);
+
+  f3 = formula_impl(f1, f2);
+  f6 = formula_impl(f2, f5);
+  b = formula_eq(f3, f6);
+  printf("Impl unequal: 0 == %u\n", b);
+
+  b = formula_eq(f1, f6);
+  printf("Impl//Pred unequal: 0 == %u\n", b);
+
+  f3 = formula_signed(prinA, f1);
+  f6 = formula_signed(prinA, f4);
+  b = formula_eq(f3, f6);
+  printf("Signed equal: 1 == %u\n", b);
+
+  f3 = formula_signed(prinA, f1);
+  f6 = formula_signed(prinB, f4);
+  b = formula_eq(f3, f6);
+  printf("Signed unequal: 0 == %u\n", b);
+
+  f3 = formula_signed(prinA, f1);
+  f6 = formula_signed(prinA, f2);
+  b = formula_eq(f3, f6);
+  printf("Signed unequal: 0 == %u\n", b);
+
+  f3 = formula_confirms(prinA, f1);
+  f6 = formula_confirms(prinA, f4);
+  b = formula_eq(f3, f6);
+  printf("Confirms equal: 1 == %u\n", b);
+
+  f3 = formula_confirms(prinA, f1);
+  f6 = formula_confirms(prinB, f4);
+  b = formula_eq(f3, f6);
+  printf("Confirms unequal: 0 == %u\n", b);
+
+  f3 = formula_confirms(prinA, f1);
+  f6 = formula_confirms(prinA, f2);
+  b = formula_eq(f3, f6);
+  printf("Confirms unequal: 0 == %u\n", b);
+
+  f3 = formula_says(prinA, f1);
+  f6 = formula_says(prinA, f4);
+  b = formula_eq(f3, f6);
+  printf("Says equal: 1 == %u\n", b);
+
+  f3 = formula_says(prinA, f1);
+  f6 = formula_says(prinB, f4);
+  b = formula_eq(f3, f6);
+  printf("Says unequal: 0 == %u\n", b);
+
+  f3 = formula_says(prinA, f1);
+  f6 = formula_says(prinA, f2);
+  b = formula_eq(f3, f6);
+  printf("Says unequal: 0 == %u\n", b);
+
+  f3 = formula_abs(f1);
+  f6 = formula_abs(f4);
+  b = formula_eq(f3, f6);
+  printf("Abs equal: 1 == %u\n", b);
+
+  f3 = formula_abs(f1);
+  f6 = formula_abs(f2);
+  b = formula_eq(f3, f6);
+  printf("Abs unequal: 0 == %u\n", b);
+}
+
+void test_formula_cp() {
+  Formula f1;
+  Formula f2;
+  Formula f3;
+  Formula f4;
+  Predicate pred1 = OK;
+  Predicate pred2 = ALRIGHT;
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  bool b;
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_cp(f1);
+  b = formula_eq(f1, f2);
+  printf("Pred cp: 1 == %u\n", b);
+
+  f1 = formula_pred(pred1, prinA);
+  f2 = formula_pred(pred2, prinB);
+  f3 = formula_impl(f1, f2);
+  f4 = formula_cp(f3);
+  b = formula_eq(f3, f4);
+  printf("Impl cp: 1 == %u\n", b);
+
+  f3 = formula_signed(prinA, f1);
+  f4 = formula_cp(f3);
+  b = formula_eq(f3, f4);
+  printf("Signed cp: 1 == %u\n", b);
+
+  f3 = formula_confirms(prinA, f1);
+  f4 = formula_cp(f3);
+  b = formula_eq(f3, f4);
+  printf("Confirms cp: 1 == %u\n", b);
+
+  f3 = formula_says(prinA, f1);
+  f4 = formula_cp(f3);
+  b = formula_eq(f3, f4);
+  printf("Says cp: 1 == %u\n", b);
+
+  f3 = formula_abs(f1);
+  f4 = formula_cp(f3);
+  b = formula_eq(f3, f4);
+  printf("Abs cp: 1 == %u\n", b);
+}
+
+void test_formula_subst();
+// For each formula type try a subst and compare the outputs
+
 int main() {
-  printall();
+//  printall();
+//  test_principal_eq();
+//  test_principal_cp();
+//  test_principal_subst();
+//  test_formula_eq();
+//  test_formula_cp();
   return 0;
 }
