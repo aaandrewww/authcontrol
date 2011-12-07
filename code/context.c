@@ -13,6 +13,9 @@ int push(Context c, Formula f) {
 }
 
 Formula pop(Context c) {
+  if (c == NULL) {
+    return NULL;
+  }
   if (c->topOfContext == 0) {
     printf("Context is empty\n");
     return NULL;
@@ -39,13 +42,16 @@ void context_free(Context c) {
   free(c);
 }
 
-bool member(Context c, Formula f){
+bool member(Context c, Formula f) {
+  if (c == NULL)
+    return false;
+
   Formula ftemp;
   Context ctemp = context_cp(c);
   ftemp = pop(ctemp);
 
-  while(ftemp){
-    if(formula_eq(f, ftemp)){
+  while (ftemp) {
+    if (formula_eq(f, ftemp)) {
       context_free(ctemp);
       return true;
     }
@@ -56,11 +62,11 @@ bool member(Context c, Formula f){
   return false;
 }
 
-Context context_cp(Context c){
+Context context_cp(Context c) {
   Context cret = context_alloc(c->size);
   int i = 0;
 
-  while(i < c->topOfContext){
+  while (i < c->topOfContext) {
     cret->contextData[i] = formula_cp(c->contextData[i]);
     i++;
   }
@@ -68,13 +74,13 @@ Context context_cp(Context c){
   return cret;
 }
 
-void context_print(Context c){
+void context_print(Context c) {
   Formula ftemp;
   Context ctemp = context_cp(c);
   ftemp = pop(ctemp);
-  while(ftemp){
+  while (ftemp) {
     formula_print(ftemp);
-    printf("\n");
+    printf("\\\\ \n");
     formula_free(ftemp);
     ftemp = pop(ctemp);
   }

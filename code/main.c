@@ -307,37 +307,37 @@ void test_principal_eq() {
   b = principal_eq(p1, p2);
 
   if (b != 1)
-    printf("Equal pcpl: 1 == %u\n", b);
+    printf("ERROR: Equal pcpl: 1 == %u\n", b);
 
   p1 = principal_pcpl(A);
   p2 = principal_pcpl(B);
   b = principal_eq(p1, p2);
   if (b != 0)
-    printf("Unequal pcpl: 0 == %u\n", b);
+    printf("ERROR: Unequal pcpl: 0 == %u\n", b);
 
   p1 = principal_var(0);
   p2 = principal_var(0);
   b = principal_eq(p1, p2);
   if (b != 1)
-    printf("Equal var: 1 == %u\n", b);
+    printf("ERROR: Equal var: 1 == %u\n", b);
 
   p1 = principal_var(0);
   p2 = principal_var(1);
   b = principal_eq(p1, p2);
   if (b != 0)
-    printf("Unqual var: 0 == %u\n", b);
+    printf("ERROR: Unqual var: 0 == %u\n", b);
 
   p1 = principal_pcpl(A);
   p2 = principal_var(0);
   b = principal_eq(p1, p2);
   if (b != 0)
-    printf("Unqual pcpl and var: 0 == %u\n", b);
+    printf("ERROR: Unqual pcpl and var: 0 == %u\n", b);
 
   p2 = principal_pcpl(A);
   p1 = principal_var(0);
   b = principal_eq(p1, p2);
   if (b != 0)
-    printf("Unqual var and pcpl: 0 == %u\n", b);
+    printf("ERROR: Unqual var and pcpl: 0 == %u\n", b);
 }
 
 void test_principal_cp() {
@@ -349,13 +349,13 @@ void test_principal_cp() {
   p2 = principal_cp(p1);
   b = principal_eq(p1, p2);
   if (b != 1)
-    printf("Copy pcpl: 1 == %u\n", b);
+    printf("ERROR: Copy pcpl: 1 == %u\n", b);
 
   p1 = principal_var(0);
   p2 = principal_cp(p1);
   b = principal_eq(p1, p2);
   if (b != 1)
-    printf("Copy var: 1 == %u\n", b);
+    printf("ERROR: Copy var: 1 == %u\n", b);
 }
 
 void test_principal_subst() {
@@ -372,7 +372,7 @@ void test_principal_subst() {
   p2 = principal_subst(p1, v0, pcpl2);
   b = principal_eq(p1, p2);
   if (b != 1) {
-    printf("Subst pcpl: 1 == %u\n", b);
+    printf("ERROR: Subst pcpl: 1 == %u\n", b);
     printf("Before: ");
     principal_print(p1);
     printf("\n");
@@ -386,7 +386,7 @@ void test_principal_subst() {
   p3 = principal_pcpl(pcpl1);
   b = principal_eq(p2, p3);
   if (b != 1) {
-    printf("Subst correct var: 1 == %u\n", b);
+    printf("ERROR: Subst correct var: 1 == %u\n", b);
     printf("Before: ");
     principal_print(p1);
     printf("\n");
@@ -399,7 +399,7 @@ void test_principal_subst() {
   p2 = principal_subst(p1, v1, pcpl1);
   b = principal_eq(p1, p2);
   if (b != 1) {
-    printf("Subst bigger var: 1 == %u\n", b);
+    printf("ERROR: Subst bigger var: 1 == %u\n", b);
     printf("Before: ");
     principal_print(p1);
     printf("\n");
@@ -413,7 +413,7 @@ void test_principal_subst() {
   p3 = principal_var(v0);
   b = principal_eq(p2, p3);
   if (b != 1) {
-    printf("Subst smaller var: 1 == %u\n", b);
+    printf("ERROR: Subst smaller var: 1 == %u\n", b);
     printf("Before: ");
     principal_print(p1);
     printf("\n");
@@ -440,19 +440,19 @@ void test_formula_eq() {
   f2 = formula_pred(pred1, prinA);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("Pred equal: 1 == %u\n", b);
+    printf("ERROR: Pred equal: 1 == %u\n", b);
 
   f1 = formula_pred(pred1, prinA);
   f2 = formula_pred(pred2, prinA);
   b = formula_eq(f1, f2);
   if (b != 0)
-    printf("Pred unequal: 0 == %u\n", b);
+    printf("ERROR: Pred unequal: 0 == %u\n", b);
 
   f1 = formula_pred(pred1, prinA);
   f2 = formula_pred(pred1, prinB);
   b = formula_eq(f1, f2);
   if (b != 0)
-    printf("Pred unequal: 0 == %u\n", b);
+    printf("ERROR: Pred unequal: 0 == %u\n", b);
 
   f1 = formula_pred(pred1, prinA);
   f2 = formula_pred(pred2, prinB);
@@ -462,7 +462,7 @@ void test_formula_eq() {
   f6 = formula_impl(f4, f5);
   b = formula_eq(f3, f6);
   if (b != 1)
-    printf("Impl equal: 1 == %u\n", b);
+    printf("ERROR: Impl equal: 1 == %u\n", b);
 
   f1 = formula_pred(pred1, prinA);
   f2 = formula_pred(pred2, prinB);
@@ -473,83 +473,83 @@ void test_formula_eq() {
   f6 = formula_impl(f4, f5);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Impl unequal: 0 == %u\n", b);
+    printf("ERROR: Impl unequal: 0 == %u\n", b);
 
   f3 = formula_impl(f1, f2);
   f6 = formula_impl(f2, f5);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Impl unequal: 0 == %u\n", b);
+    printf("ERROR: Impl unequal: 0 == %u\n", b);
 
   b = formula_eq(f1, f6);
   if (b != 0)
-    printf("Impl//Pred unequal: 0 == %u\n", b);
+    printf("ERROR: Impl//Pred unequal: 0 == %u\n", b);
 
   f3 = formula_signed(prinA, f1);
   f6 = formula_signed(prinA, f4);
   b = formula_eq(f3, f6);
   if (b != 1)
-    printf("Signed equal: 1 == %u\n", b);
+    printf("ERROR: Signed equal: 1 == %u\n", b);
 
   f3 = formula_signed(prinA, f1);
   f6 = formula_signed(prinB, f4);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Signed unequal: 0 == %u\n", b);
+    printf("ERROR: Signed unequal: 0 == %u\n", b);
 
   f3 = formula_signed(prinA, f1);
   f6 = formula_signed(prinA, f2);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Signed unequal: 0 == %u\n", b);
+    printf("ERROR: Signed unequal: 0 == %u\n", b);
 
   f3 = formula_confirms(prinA, f1);
   f6 = formula_confirms(prinA, f4);
   b = formula_eq(f3, f6);
   if (b != 1)
-    printf("Confirms equal: 1 == %u\n", b);
+    printf("ERROR: Confirms equal: 1 == %u\n", b);
 
   f3 = formula_confirms(prinA, f1);
   f6 = formula_confirms(prinB, f4);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Confirms unequal: 0 == %u\n", b);
+    printf("ERROR: Confirms unequal: 0 == %u\n", b);
 
   f3 = formula_confirms(prinA, f1);
   f6 = formula_confirms(prinA, f2);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Confirms unequal: 0 == %u\n", b);
+    printf("ERROR: Confirms unequal: 0 == %u\n", b);
 
   f3 = formula_says(prinA, f1);
   f6 = formula_says(prinA, f4);
   b = formula_eq(f3, f6);
   if (b != 1)
-    printf("Says equal: 1 == %u\n", b);
+    printf("ERROR: Says equal: 1 == %u\n", b);
 
   f3 = formula_says(prinA, f1);
   f6 = formula_says(prinB, f4);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Says unequal: 0 == %u\n", b);
+    printf("ERROR: Says unequal: 0 == %u\n", b);
 
   f3 = formula_says(prinA, f1);
   f6 = formula_says(prinA, f2);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Says unequal: 0 == %u\n", b);
+    printf("ERROR: Says unequal: 0 == %u\n", b);
 
   f3 = formula_abs(f1);
   f6 = formula_abs(f4);
   b = formula_eq(f3, f6);
   if (b != 1)
-    printf("Abs equal: 1 == %u\n", b);
+    printf("ERROR: Abs equal: 1 == %u\n", b);
 
   f3 = formula_abs(f1);
   f6 = formula_abs(f2);
   b = formula_eq(f3, f6);
   if (b != 0)
-    printf("Abs unequal: 0 == %u\n", b);
+    printf("ERROR: Abs unequal: 0 == %u\n", b);
 }
 
 void test_formula_cp() {
@@ -567,7 +567,7 @@ void test_formula_cp() {
   f2 = formula_cp(f1);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("Pred cp: 1 == %u\n", b);
+    printf("ERROR: Pred cp: 1 == %u\n", b);
 
   f1 = formula_pred(pred1, prinA);
   f2 = formula_pred(pred2, prinB);
@@ -575,31 +575,31 @@ void test_formula_cp() {
   f4 = formula_cp(f3);
   b = formula_eq(f3, f4);
   if (b != 1)
-    printf("Impl cp: 1 == %u\n", b);
+    printf("ERROR: Impl cp: 1 == %u\n", b);
 
   f3 = formula_signed(prinA, f1);
   f4 = formula_cp(f3);
   b = formula_eq(f3, f4);
   if (b != 1)
-    printf("Signed cp: 1 == %u\n", b);
+    printf("ERROR: Signed cp: 1 == %u\n", b);
 
   f3 = formula_confirms(prinA, f1);
   f4 = formula_cp(f3);
   b = formula_eq(f3, f4);
   if (b != 1)
-    printf("Confirms cp: 1 == %u\n", b);
+    printf("ERROR: Confirms cp: 1 == %u\n", b);
 
   f3 = formula_says(prinA, f1);
   f4 = formula_cp(f3);
   b = formula_eq(f3, f4);
   if (b != 1)
-    printf("Says cp: 1 == %u\n", b);
+    printf("ERROR: Says cp: 1 == %u\n", b);
 
   f3 = formula_abs(f1);
   f4 = formula_cp(f3);
   b = formula_eq(f3, f4);
   if (b != 1)
-    printf("Abs cp: 1 == %u\n", b);
+    printf("ERROR: Abs cp: 1 == %u\n", b);
 }
 
 void test_formula_subst() {
@@ -627,7 +627,7 @@ void test_formula_subst() {
   f3 = formula_pred(pred1, prinA);
   b = formula_eq(f2, f3);
   if (b != 1)
-    printf("Pred subst: 1 == %u\n", b);
+    printf("ERROR: Pred subst: 1 == %u\n", b);
 
   f1 = formula_pred(pred1, prin0);
   f2 = formula_pred(pred2, prin1);
@@ -638,28 +638,28 @@ void test_formula_subst() {
   f7 = formula_impl(f5, f6);
   b = formula_eq(f4, f7);
   if (b != 1)
-    printf("Impl subst: 1 == %u\n", b);
+    printf("ERROR: Impl subst: 1 == %u\n", b);
 
   f3 = formula_signed(prin1, f1);
   f4 = formula_subst(f3, v1, pcplA);
   f5 = formula_signed(prinA, f1);
   b = formula_eq(f4, f5);
   if (b != 1)
-    printf("Signed subst: 1 == %u\n", b);
+    printf("ERROR: Signed subst: 1 == %u\n", b);
 
   f3 = formula_confirms(prin1, f1);
   f4 = formula_subst(f3, v1, pcplA);
   f5 = formula_confirms(prinA, f1);
   b = formula_eq(f4, f5);
   if (b != 1)
-    printf("Confirms subst: 1 == %u\n", b);
+    printf("ERROR: Confirms subst: 1 == %u\n", b);
 
   f3 = formula_says(prin1, f1);
   f4 = formula_subst(f3, v1, pcplA);
   f5 = formula_says(prinA, f1);
   b = formula_eq(f4, f5);
   if (b != 1)
-    printf("Says subst: 1 == %u\n", b);
+    printf("ERROR: Says subst: 1 == %u\n", b);
 
   f3 = formula_abs(f2);
   f4 = formula_subst(f3, v0, pcplA);
@@ -667,7 +667,7 @@ void test_formula_subst() {
   f6 = formula_abs(f5);
   b = formula_eq(f4, f6);
   if (b != 1)
-    printf("Abs cp: 1 == %u\n", b);
+    printf("ERROR: Abs cp: 1 == %u\n", b);
 }
 
 void test_proof_eq() {
@@ -694,24 +694,24 @@ void test_proof_eq() {
   p2 = proof_signed(f1);
   b = proof_eq(p1, p2);
   if (b != 1)
-    printf("signed proof eq: 1 == %u\n", b);
+    printf("ERROR: signed proof eq: 1 == %u\n", b);
 
   f1 = formula_confirms(prinA, fpred);
   p3 = proof_confirms(f1);
   p4 = proof_confirms(f1);
   b = proof_eq(p3, p4);
   if (b != 1)
-    printf("confirms proof eq: 1 == %u\n", b);
+    printf("ERROR: confirms proof eq: 1 == %u\n", b);
 
   b = proof_eq(p1, p4);
   if (b != 0)
-    printf("confirms/signed proof eq: 0 == %u\n", b);
+    printf("ERROR: confirms/signed proof eq: 0 == %u\n", b);
 
   p1 = proof_assump(fpred);
   p2 = proof_assump(fpred);
   b = proof_eq(p1, p2);
   if (b != 1)
-    printf("assump proof eq: 1 == %u\n", b);
+    printf("ERROR: assump proof eq: 1 == %u\n", b);
 
   f1 = formula_says(prinB, fpred);
   p1 = proof_assump(fpred);
@@ -720,7 +720,7 @@ void test_proof_eq() {
   p4 = proof_tauto(f1, p3);
   b = proof_eq(p2, p4);
   if (b != 1)
-    printf("tauto proof eq: 1 == %u\n", b);
+    printf("ERROR: tauto proof eq: 1 == %u\n", b);
 
   f1 = formula_impl(fpred, fpred2);
   p1 = proof_assump(fpred2);
@@ -729,7 +729,7 @@ void test_proof_eq() {
   p4 = proof_weaken_impl(f1, p3);
   b = proof_eq(p2, p4);
   if (b != 1)
-    printf("weaken_impl proof eq: 1 == %u\n", b);
+    printf("ERROR: weaken_impl proof eq: 1 == %u\n", b);
 
   f1 = formula_impl(fpred, fpred2);
   p1 = proof_assump(fpred);
@@ -740,7 +740,7 @@ void test_proof_eq() {
   p6 = proof_impl(fpred2, p4, p5);
   b = proof_eq(p3, p6);
   if (b != 1)
-    printf("impl proof eq: 1 == %u\n", b);
+    printf("ERROR: impl proof eq: 1 == %u\n", b);
 
   f1 = formula_confirms(prinA, fpred);
   p1 = proof_assump(f1);
@@ -751,7 +751,7 @@ void test_proof_eq() {
   p6 = proof_says_confirms(fsays2, p4, p5);
   b = proof_eq(p3, p6);
   if (b != 1)
-    printf("says confirms proof eq: 1 == %u\n", b);
+    printf("ERROR: says confirms proof eq: 1 == %u\n", b);
 
   f1 = formula_says(prinA, fpred);
   p1 = proof_assump(f1);
@@ -762,7 +762,7 @@ void test_proof_eq() {
   p6 = proof_says_says(fsays2, p4, p5);
   b = proof_eq(p3, p6);
   if (b != 1)
-    printf("says says proof eq: 1 == %u\n", b);
+    printf("ERROR: says says proof eq: 1 == %u\n", b);
 
   f1 = formula_signed(prinA, fpred);
   p1 = proof_assump(f1);
@@ -773,7 +773,7 @@ void test_proof_eq() {
   p6 = proof_says_signed(fsays2, p4, p5);
   b = proof_eq(p3, p6);
   if (b != 1)
-    printf("says signed proof eq: 1 == %u\n", b);
+    printf("ERROR: says signed proof eq: 1 == %u\n", b);
 
   Pcpl pcplB = B;
   f1 = formula_abs(fpred);
@@ -786,7 +786,7 @@ void test_proof_eq() {
   p6 = proof_says_spec(fsays2, pcplB, p4, p5);
   b = proof_eq(p3, p6);
   if (b != 1)
-    printf("says spec proof eq: 1 == %u\n", b);
+    printf("ERROR: says spec proof eq: 1 == %u\n", b);
 }
 void test_proof_cp(){
   Principal prinA = principal_pcpl(A);
@@ -810,20 +810,20 @@ void test_proof_cp(){
   p2 = proof_cp(p1);
   b = proof_eq(p1, p2);
   if (b != 1)
-    printf("signed proof cp: 1 == %u\n", b);
+    printf("ERROR: signed proof cp: 1 == %u\n", b);
 
   f1 = formula_confirms(prinA, fpred);
   p1 = proof_confirms(f1);
   p2 = proof_cp(p1);
   b = proof_eq(p1, p2);
   if (b != 1)
-    printf("confirms proof cp: 1 == %u\n", b);
+    printf("ERROR: confirms proof cp: 1 == %u\n", b);
 
   p1 = proof_assump(fpred);
   p2 = proof_cp(p1);
   b = proof_eq(p1, p2);
   if (b != 1)
-    printf("assump proof cp: 1 == %u\n", b);
+    printf("ERROR: assump proof cp: 1 == %u\n", b);
 
   f1 = formula_says(prinB, fpred);
   p1 = proof_assump(fpred);
@@ -831,7 +831,7 @@ void test_proof_cp(){
   p3 = proof_cp(p2);
   b = proof_eq(p2, p3);
   if (b != 1)
-    printf("tauto proof cp: 1 == %u\n", b);
+    printf("ERROR: tauto proof cp: 1 == %u\n", b);
 
   f1 = formula_impl(fpred, fpred2);
   p1 = proof_assump(fpred2);
@@ -839,7 +839,7 @@ void test_proof_cp(){
   p3 = proof_cp(p2);
   b = proof_eq(p2, p3);
   if (b != 1)
-    printf("weaken_impl proof cp: 1 == %u\n", b);
+    printf("ERROR: weaken_impl proof cp: 1 == %u\n", b);
 
   f1 = formula_impl(fpred, fpred2);
   p1 = proof_assump(fpred);
@@ -848,7 +848,7 @@ void test_proof_cp(){
   p4 = proof_cp(p3);
   b = proof_eq(p3, p4);
   if (b != 1)
-    printf("impl proof cp: 1 == %u\n", b);
+    printf("ERROR: impl proof cp: 1 == %u\n", b);
 
   f1 = formula_confirms(prinA, fpred);
   p1 = proof_assump(f1);
@@ -857,7 +857,7 @@ void test_proof_cp(){
   p4 = proof_cp(p3);
   b = proof_eq(p3, p4);
   if (b != 1)
-    printf("says confirms proof cp: 1 == %u\n", b);
+    printf("ERROR: says confirms proof cp: 1 == %u\n", b);
 
   f1 = formula_says(prinA, fpred);
   p1 = proof_assump(f1);
@@ -866,7 +866,7 @@ void test_proof_cp(){
   p4 = proof_cp(p3);
   b = proof_eq(p3, p4);
   if (b != 1)
-    printf("says says proof cp: 1 == %u\n", b);
+    printf("ERROR: says says proof cp: 1 == %u\n", b);
 
   f1 = formula_signed(prinA, fpred);
   p1 = proof_assump(f1);
@@ -875,7 +875,7 @@ void test_proof_cp(){
   p4 = proof_cp(p3);
   b = proof_eq(p3, p4);
   if (b != 1)
-    printf("says signed proof cp: 1 == %u\n", b);
+    printf("ERROR: says signed proof cp: 1 == %u\n", b);
 
   Pcpl pcplB = B;
   f1 = formula_abs(fpred);
@@ -886,16 +886,16 @@ void test_proof_cp(){
   p4 = proof_cp(p3);
   b = proof_eq(p3, p4);
   if (b != 1)
-    printf("says spec proof cp: 1 == %u\n", b);
+    printf("ERROR: says spec proof cp: 1 == %u\n", b);
 }
 void test_proof_goal(){
   Principal prinA = principal_pcpl(A);
   Principal prinB = principal_pcpl(B);
-  Predicate pred = OK;
-  Predicate pred2 = ALRIGHT;
-  Formula fpred = formula_pred(pred, prinA);
-  Formula fpred2 = formula_pred(pred2, prinB);
-  Formula fsays1 = formula_says(prinA, fpred);
+  Predicate predOK = OK;
+  Predicate predALRIGHT = ALRIGHT;
+  Formula fpred1 = formula_pred(predOK, prinA);
+  Formula fpred2 = formula_pred(predALRIGHT, prinB);
+  Formula fsays1 = formula_says(prinA, fpred1);
   Formula fsays2 = formula_says(prinA, fpred2);
   Formula f1;
   Formula f2;
@@ -905,80 +905,80 @@ void test_proof_goal(){
   Proof p3;
   bool b;
 
-  f1 = formula_signed(prinA, fpred);
+  f1 = formula_signed(prinA, fpred1);
   p1 = proof_signed(f1);
   f2 = proof_goal(p1);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("signed proof goal: 1 == %u\n", b);
+    printf("ERROR: signed proof goal: 1 == %u\n", b);
 
-  f1 = formula_confirms(prinA, fpred);
+  f1 = formula_confirms(prinA, fpred1);
   p1 = proof_confirms(f1);
   f2 = proof_goal(p1);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("confirms proof goal: 1 == %u\n", b);
+    printf("ERROR: confirms proof goal: 1 == %u\n", b);
 
-  p1 = proof_assump(fpred);
+  p1 = proof_assump(fpred1);
   f2 = proof_goal(p1);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("assump proof goal: 1 == %u\n", b);
+    printf("ERROR: assump proof goal: 1 == %u\n", b);
 
-  f1 = formula_says(prinB, fpred);
-  p1 = proof_assump(fpred);
+  f1 = formula_says(prinB, fpred1);
+  p1 = proof_assump(fpred1);
   p2 = proof_tauto(f1, p1);
   f2 = proof_goal(p2);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("tauto proof goal: 1 == %u\n", b);
+    printf("ERROR: tauto proof goal: 1 == %u\n", b);
 
-  f1 = formula_impl(fpred, fpred2);
+  f1 = formula_impl(fpred1, fpred2);
   p1 = proof_assump(fpred2);
   p2 = proof_weaken_impl(f1, p1);
   f2 = proof_goal(p2);
   b = formula_eq(f1, f2);
   if (b != 1)
-    printf("weaken_impl proof cp: 1 == %u\n", b);
+    printf("ERROR: weaken_impl proof cp: 1 == %u\n", b);
 
-  f1 = formula_impl(fpred, fpred2);
-  p1 = proof_assump(fpred);
+  f1 = formula_impl(fpred1, fpred2);
+  p1 = proof_assump(fpred1);
   p2 = proof_assump(f1);
   p3 = proof_impl(fpred2, p1, p2);
   f2 = proof_goal(p3);
   b = formula_eq(fpred2, f2);
   if (b != 1)
-    printf("impl proof cp: 1 == %u\n", b);
+    printf("ERROR: impl proof cp: 1 == %u\n", b);
 
-  f1 = formula_confirms(prinA, fpred);
+  f1 = formula_confirms(prinA, fpred1);
   p1 = proof_assump(f1);
   p2 = proof_assump(fsays1);
   p3 = proof_says_confirms(fsays2, p1, p2);
   f2 = proof_goal(p3);
   b = formula_eq(fsays2, f2);
   if (b != 1)
-    printf("says confirms proof cp: 1 == %u\n", b);
+    printf("ERROR: says confirms proof cp: 1 == %u\n", b);
 
-  f1 = formula_says(prinA, fpred);
+  f1 = formula_says(prinA, fpred1);
   p1 = proof_assump(f1);
   p2 = proof_assump(fsays1);
   p3 = proof_says_says(fsays2, p1, p2);
   f2 = proof_goal(p3);
   b = formula_eq(fsays2, f2);
   if (b != 1)
-    printf("says says proof cp: 1 == %u\n", b);
+    printf("ERROR: says says proof cp: 1 == %u\n", b);
 
-  f1 = formula_signed(prinA, fpred);
+  f1 = formula_signed(prinA, fpred1);
   p1 = proof_assump(f1);
   p2 = proof_assump(fsays1);
   p3 = proof_says_signed(fsays2, p1, p2);
   f2 = proof_goal(p3);
   b = formula_eq(fsays2, f2);
   if (b != 1)
-    printf("says signed proof cp: 1 == %u\n", b);
+    printf("ERROR: says signed proof cp: 1 == %u\n", b);
 
   Pcpl pcplB = B;
-  f1 = formula_abs(fpred);
+  f1 = formula_abs(fpred1);
   f2 = formula_says(prinA, f1);
   p1 = proof_assump(f2);
   p2 = proof_assump(fsays2);
@@ -986,7 +986,7 @@ void test_proof_goal(){
   f3 = proof_goal(p3);
   b = formula_eq(fsays2, f3);
   if (b != 1)
-    printf("says spec proof cp: 1 == %u\n", b);
+    printf("ERROR: says spec proof cp: 1 == %u\n", b);
 }
 
 void test_proof_check_assump(){
@@ -1000,11 +1000,107 @@ void test_proof_check_assump(){
   push(c, fpred);
   b = proof_check(fpred, pf, c);
   if (b != 1)
-    printf("assump proof check: 1 == %u\n", b);
+    printf("ERROR: assump proof check: 1 == %u\n", b);
+
+  b = proof_check(fpred, pf, NULL);
+  if (b != 0)
+    printf("ERROR: assump proof check (bad context): 0 == %u\n", b);
+}
+
+void test_proof_check_signed(){
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Formula f = formula_signed(prinA, fpred);
+  Proof p = proof_signed(f);
+  bool b = proof_check(f, p, NULL);
+  if (b != 1)
+    printf("ERROR: signed proof check: 1 == %u\n", b);
+
+  Formula f2 = formula_signed(prinB, fpred);
+  p = proof_signed(f2);
+  printf("Expected error:\n");
+  b = proof_check(f, p, NULL);
+  printf(":End expected\n\n");
+  if (b != 0)
+    printf("ERROR: signed proof check (bad): 0 == %u\n", b);
+}
+
+void test_proof_check_confirms(){
+  Principal prinA = principal_pcpl(A);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Formula f = formula_confirms(prinA, fpred);
+  Proof p = proof_confirms(f);
+  bool b = proof_check(f, p, NULL);
+  if (b != 1)
+    printf("ERROR: confirms proof check: 1 == %u\n", b);
+
+  Formula f2 = formula_signed(prinA, fpred);
+  printf("Expected error:\n");
+  b = proof_check(f2, p, NULL);
+  printf(":End expected\n\n");
+  if (b != 0)
+    printf("ERROR: signed/confirms proof check: 0 == %u\n", b);
+}
+
+void test_proof_check_tauto(){
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Formula f1 = formula_says(prinB, fpred);
+  Proof p1 = proof_assump(fpred);
+  Proof p2 = proof_tauto(f1, p1);
+
+  Context c = context_alloc(1);
+  push(c, fpred);
+
+  bool b = proof_check(f1, p2, c);
+  if (b != 1)
+    printf("ERROR: tauto proof check: 1 == %u\n", b);
+
+  Formula fpred2 = formula_pred(pred, prinB);
+  f1 = formula_says(prinB, fpred2);
+  p1 = proof_assump(fpred);
+  p2 = proof_tauto(f1, p1);
+  printf("Expected error:\n");
+  b = proof_check(fpred, p2, c);
+  printf(":End expected\n\n");
+  if (b != 0)
+    printf("ERROR: tauto proof check (bad): 0 == %u\n", b);
+}
+
+void test_proof_check_weaken_impl(){
+
+}
+
+void test_proof_check_impl(){
+
+}
+
+void test_proof_check_says_confirms(){
+
+}
+
+void test_proof_check_says_signed(){
+
+}
+
+void test_proof_check_says_says(){
+
+}
+
+void test_proof_check_says_spec(){
+
 }
 
 void test_proof_check(){
   test_proof_check_assump();
+  test_proof_check_signed();
+  test_proof_check_confirms();
+  test_proof_check_tauto();
 }
 
 int main() {
