@@ -17,5 +17,6 @@ Formula pop(Context c);
 Context context_alloc(uint32_t size);
 void context_free();
 Context context_cp(Context c);
+void context_print(Context c);
 
 #endif /* CONTEXT_H_ */

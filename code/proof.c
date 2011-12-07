@@ -5,8 +5,9 @@
 #include <formula.h>
 #include <context.h>
 
+// Debugging wrapper around formula_eq that prints out a message when fails
 bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
-  if (!(formula_eq(formula, goal))) {
+  if (!formula_eq(formula, goal)) {
     printf("ERROR: formula does not match goal \n");
     printf("Formula:\n");
     formula_print(formula);
@@ -19,6 +20,7 @@ bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
   return true;
 }
 
+// Check that Proof, pf, is a valid proof of Formula, f, given Context, c
 bool proof_check(Formula f, Proof pf, Context c) {
   Proof p1;
   Proof p2;
@@ -26,18 +28,18 @@ bool proof_check(Formula f, Proof pf, Context c) {
   int flag;
 
   // Check if the formula is the same as the proof goal
-  if (!(formula_goal_check(f, proof_goal(pf), pf)))
+  if (!formula_goal_check(f, proof_goal(pf), pf))
     return false;
 
   switch (pf->type) {
   case SIGNED_R:
     if (f->type != SIGNED_F)
       goto invalid_proof;
-    return true;
+    return true; // TODO check signatures
   case CONFIRMS_R:
     if (f->type != CONFIRMS_F)
       goto invalid_proof;
-    return true;
+    return true; // TODO check confirms
   case TAUTO_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -55,7 +57,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
     pg1 = proof_goal(p1);
 
     // Check that we have a valid proof of the implicant
-    if (!(proof_check(pg1, p1, c)))
+    if (!proof_check(pg1, p1, c))
       return false;
 
     // Check that pf2 is a proof of f1->f2
@@ -69,11 +71,11 @@ bool proof_check(Formula f, Proof pf, Context c) {
     Formula f4 = impl->form.impl_f.formula2;
 
     // The goal of the first proof is the implicant
-    if (!(formula_goal_check(f3, pg1, p1)))
+    if (!formula_goal_check(f3, pg1, p1))
       goto invalid_proof;
 
     // The checked formula is the implicand
-    if (!(formula_eq(f4, f)))
+    if (!formula_eq(f4, f))
       goto invalid_proof;
 
     // Check the proof of the implication
@@ -90,7 +92,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
       goto invalid_proof;
 
     // The principal in the Says is the same as the one in Confirms
-    if (!(principal_eq(f->form.says_f.principal, pg1->form.confirms_f.principal)))
+    if (!principal_eq(f->form.says_f.principal, pg1->form.confirms_f.principal))
       goto invalid_proof;
 
     // Check that the first proof is valid
@@ -112,7 +114,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
       goto invalid_proof;
 
     // The principal in the Says is the same as the one in Signed
-    if (!(principal_eq(f->form.says_f.principal, pg1->form.signed_f.principal)))
+    if (!principal_eq(f->form.says_f.principal, pg1->form.signed_f.principal))
       goto invalid_proof;
 
     // Check that the first proof is valid
@@ -134,7 +136,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
       goto invalid_proof;
 
     // The principal in the Says is the same as the one in the other Says
-    if (!(principal_eq(f->form.says_f.principal, pg1->form.says_f.principal)))
+    if (!principal_eq(f->form.says_f.principal, pg1->form.says_f.principal))
       goto invalid_proof;
 
     // Check that the first proof is valid
@@ -160,11 +162,11 @@ bool proof_check(Formula f, Proof pf, Context c) {
       goto invalid_proof;
 
     // The principal in the Says is the same as the one in the Says Abstraction
-    if (!(principal_eq(f->form.says_f.principal, pg1->form.says_f.principal)))
+    if (!principal_eq(f->form.says_f.principal, pg1->form.says_f.principal))
       goto invalid_proof;
 
     // The first proof is valid
-    if (!(proof_check(pg1, p1, c)))
+    if (!proof_check(pg1, p1, c))
       return false;
 
     // Check the proof with f1[p/0] added to the context
@@ -176,12 +178,13 @@ bool proof_check(Formula f, Proof pf, Context c) {
 
   case ASSUMP_R:
     return member(c, f);
+
   default:
     printf("PROOF TYPE UNDEFINED IN CHECKER");
     return false;
   }
 
-invalid_proof: printf("ERROR: invalid proof\n");
+  invalid_proof: printf("ERROR: invalid proof\n");
   printf("Formula:\n");
   formula_print(f);
   printf("\n");
@@ -291,62 +294,62 @@ void proof_print(Proof pf) {
   }
 }
 
-Proof proof_cp(Proof r) {
+Proof proof_cp(Proof pf) {
   Proof newr = malloc(sizeof(struct proof));
   if (newr == NULL)
     return newr;
-  newr->type = r->type;
+  newr->type = pf->type;
 
-  switch (r->type) {
+  switch (pf->type) {
   case SIGNED_R:
-    newr->r.signed_r.goal = formula_cp(r->r.signed_r.goal);
+    newr->r.signed_r.goal = formula_cp(pf->r.signed_r.goal);
     if (newr->r.signed_r.goal == NULL)
       goto freenewr;
     return newr;
   case CONFIRMS_R:
-    newr->r.confirms_r.goal = formula_cp(r->r.confirms_r.goal);
+    newr->r.confirms_r.goal = formula_cp(pf->r.confirms_r.goal);
     if (newr->r.confirms_r.goal == NULL)
       goto freenewr;
     return newr;
   case ASSUMP_R:
-    newr->r.assump_r.goal = formula_cp(r->r.assump_r.goal);
+    newr->r.assump_r.goal = formula_cp(pf->r.assump_r.goal);
     if (newr->r.assump_r.goal == NULL)
       goto freenewr;
     return newr;
   case TAUTO_R:
-    newr->r.tauto_r.goal = formula_cp(r->r.tauto_r.goal);
+    newr->r.tauto_r.goal = formula_cp(pf->r.tauto_r.goal);
     if (newr->r.tauto_r.goal == NULL)
       goto freenewr;
 
-    newr->r.tauto_r.proof = proof_cp(r->r.tauto_r.proof);
+    newr->r.tauto_r.proof = proof_cp(pf->r.tauto_r.proof);
     if (newr->r.tauto_r.proof == NULL) {
       free(newr->r.tauto_r.goal);
       goto freenewr;
     }
     return newr;
   case WEAKEN_IMPL_R:
-    newr->r.weaken_impl_r.goal = formula_cp(r->r.weaken_impl_r.goal);
+    newr->r.weaken_impl_r.goal = formula_cp(pf->r.weaken_impl_r.goal);
     if (newr->r.weaken_impl_r.goal == NULL)
       goto freenewr;
 
-    newr->r.weaken_impl_r.proof = proof_cp(r->r.weaken_impl_r.proof);
+    newr->r.weaken_impl_r.proof = proof_cp(pf->r.weaken_impl_r.proof);
     if (newr->r.weaken_impl_r.proof == NULL) {
       free(newr->r.weaken_impl_r.goal);
       goto freenewr;
     }
     return newr;
   case IMPL_R:
-    newr->r.impl_r.goal = formula_cp(r->r.impl_r.goal);
+    newr->r.impl_r.goal = formula_cp(pf->r.impl_r.goal);
     if (newr->r.impl_r.goal == NULL)
       goto freenewr;
 
-    newr->r.impl_r.pf1 = proof_cp(r->r.impl_r.pf1);
+    newr->r.impl_r.pf1 = proof_cp(pf->r.impl_r.pf1);
     if (newr->r.impl_r.pf1 == NULL) {
       free(newr->r.impl_r.goal);
       goto freenewr;
     }
 
-    newr->r.impl_r.pf2 = proof_cp(r->r.impl_r.pf2);
+    newr->r.impl_r.pf2 = proof_cp(pf->r.impl_r.pf2);
     if (newr->r.impl_r.pf2 == NULL) {
       free(newr->r.impl_r.pf1);
       free(newr->r.impl_r.goal);
@@ -354,17 +357,17 @@ Proof proof_cp(Proof r) {
     }
     return newr;
   case SAYS_CONFIRMS_R:
-    newr->r.says_confirms_r.goal = formula_cp(r->r.says_confirms_r.goal);
+    newr->r.says_confirms_r.goal = formula_cp(pf->r.says_confirms_r.goal);
     if (newr->r.says_confirms_r.goal == NULL)
       goto freenewr;
 
-    newr->r.impl_r.pf1 = proof_cp(r->r.impl_r.pf1);
+    newr->r.impl_r.pf1 = proof_cp(pf->r.impl_r.pf1);
     if (newr->r.impl_r.pf1 == NULL) {
       free(newr->r.impl_r.goal);
       goto freenewr;
     }
 
-    newr->r.impl_r.pf2 = proof_cp(r->r.impl_r.pf2);
+    newr->r.impl_r.pf2 = proof_cp(pf->r.impl_r.pf2);
     if (newr->r.impl_r.pf2 == NULL) {
       free(newr->r.impl_r.pf1);
       free(newr->r.impl_r.goal);
@@ -372,17 +375,17 @@ Proof proof_cp(Proof r) {
     }
     return newr;
   case SAYS_SIGNED_R:
-    newr->r.says_signed_r.goal = formula_cp(r->r.says_signed_r.goal);
+    newr->r.says_signed_r.goal = formula_cp(pf->r.says_signed_r.goal);
     if (newr->r.says_signed_r.goal == NULL)
       goto freenewr;
 
-    newr->r.says_signed_r.pf1 = proof_cp(r->r.says_signed_r.pf1);
+    newr->r.says_signed_r.pf1 = proof_cp(pf->r.says_signed_r.pf1);
     if (newr->r.says_signed_r.pf1 == NULL) {
       free(newr->r.says_signed_r.goal);
       goto freenewr;
     }
 
-    newr->r.says_signed_r.pf2 = proof_cp(r->r.says_signed_r.pf2);
+    newr->r.says_signed_r.pf2 = proof_cp(pf->r.says_signed_r.pf2);
     if (newr->r.says_signed_r.pf2 == NULL) {
       free(newr->r.says_signed_r.pf1);
       free(newr->r.says_signed_r.goal);
@@ -390,17 +393,17 @@ Proof proof_cp(Proof r) {
     }
     return newr;
   case SAYS_SAYS_R:
-    newr->r.says_says_r.goal = formula_cp(r->r.says_says_r.goal);
+    newr->r.says_says_r.goal = formula_cp(pf->r.says_says_r.goal);
     if (newr->r.says_says_r.goal == NULL)
       goto freenewr;
 
-    newr->r.says_says_r.pf1 = proof_cp(r->r.says_says_r.pf1);
+    newr->r.says_says_r.pf1 = proof_cp(pf->r.says_says_r.pf1);
     if (newr->r.says_says_r.pf1 == NULL) {
       free(newr->r.says_says_r.goal);
       goto freenewr;
     }
 
-    newr->r.says_says_r.pf2 = proof_cp(r->r.says_says_r.pf2);
+    newr->r.says_says_r.pf2 = proof_cp(pf->r.says_says_r.pf2);
     if (newr->r.says_says_r.pf2 == NULL) {
       free(newr->r.says_says_r.pf1);
       free(newr->r.says_says_r.goal);
@@ -408,19 +411,19 @@ Proof proof_cp(Proof r) {
     }
     return newr;
   case SAYS_SPEC_R:
-    newr->r.says_spec_r.goal = formula_cp(r->r.says_spec_r.goal);
+    newr->r.says_spec_r.goal = formula_cp(pf->r.says_spec_r.goal);
     if (newr->r.says_spec_r.goal == NULL)
       goto freenewr;
 
-    newr->r.says_spec_r.p = r->r.says_spec_r.p;
+    newr->r.says_spec_r.p = pf->r.says_spec_r.p;
 
-    newr->r.says_spec_r.pf1 = proof_cp(r->r.says_spec_r.pf1);
+    newr->r.says_spec_r.pf1 = proof_cp(pf->r.says_spec_r.pf1);
     if (newr->r.says_spec_r.pf1 == NULL) {
       free(newr->r.says_spec_r.goal);
       goto freenewr;
     }
 
-    newr->r.says_spec_r.pf2 = proof_cp(r->r.says_spec_r.pf2);
+    newr->r.says_spec_r.pf2 = proof_cp(pf->r.says_spec_r.pf2);
     if (newr->r.says_spec_r.pf2 == NULL) {
       free(newr->r.says_spec_r.pf1);
       free(newr->r.says_spec_r.goal);
@@ -433,6 +436,61 @@ Proof proof_cp(Proof r) {
 
 freenewr: free(newr);
   return NULL;
+}
+
+bool proof_eq(Proof pf1, Proof pf2) {
+  if (pf1->type != pf2->type)
+    return false;
+
+  switch (pf1->type) {
+  case SIGNED_R:
+    return formula_eq(pf1->r.signed_r.goal, pf2->r.signed_r.goal);
+  case CONFIRMS_R:
+    return formula_eq(pf1->r.confirms_r.goal, pf2->r.confirms_r.goal);
+  case ASSUMP_R:
+    return formula_eq(pf1->r.confirms_r.goal, pf2->r.confirms_r.goal);
+  case TAUTO_R:
+    if (!formula_eq(pf1->r.tauto_r.goal, pf2->r.tauto_r.goal))
+      return false;
+    return proof_eq(pf1->r.tauto_r.proof, pf2->r.tauto_r.proof);
+  case WEAKEN_IMPL_R:
+    if (!formula_eq(pf1->r.weaken_impl_r.goal, pf2->r.weaken_impl_r.goal))
+      return false;
+    return proof_eq(pf1->r.weaken_impl_r.proof, pf2->r.weaken_impl_r.proof);
+  case IMPL_R:
+    if (!formula_eq(pf1->r.impl_r.goal, pf2->r.impl_r.goal))
+      return false;
+    if (!proof_eq(pf1->r.impl_r.pf1, pf2->r.impl_r.pf1))
+      return false;
+    return proof_eq(pf1->r.impl_r.pf2, pf2->r.impl_r.pf2);
+  case SAYS_CONFIRMS_R:
+    if (!formula_eq(pf1->r.says_confirms_r.goal, pf2->r.says_confirms_r.goal))
+      return false;
+    if (!proof_eq(pf1->r.says_confirms_r.pf1, pf2->r.says_confirms_r.pf1))
+      return false;
+    return proof_eq(pf1->r.says_confirms_r.pf2, pf2->r.says_confirms_r.pf2);
+  case SAYS_SIGNED_R:
+    if (!formula_eq(pf1->r.says_signed_r.goal, pf2->r.says_signed_r.goal))
+      return false;
+    if (!proof_eq(pf1->r.says_signed_r.pf1, pf2->r.says_signed_r.pf1))
+      return false;
+    return proof_eq(pf1->r.says_signed_r.pf2, pf2->r.says_signed_r.pf2);
+  case SAYS_SAYS_R:
+    if (!formula_eq(pf1->r.says_says_r.goal, pf2->r.says_says_r.goal))
+      return false;
+    if (!proof_eq(pf1->r.says_says_r.pf1, pf2->r.says_says_r.pf1))
+      return false;
+    return proof_eq(pf1->r.says_says_r.pf2, pf2->r.says_says_r.pf2);
+  case SAYS_SPEC_R:
+    if (pf1->r.says_spec_r.p != pf2->r.says_spec_r.p)
+      return false;
+    if (!formula_eq(pf1->r.says_spec_r.goal, pf2->r.says_spec_r.goal))
+      return false;
+    if (!proof_eq(pf1->r.says_spec_r.pf1, pf2->r.says_spec_r.pf1))
+      return false;
+    return proof_eq(pf1->r.says_spec_r.pf2, pf2->r.says_spec_r.pf2);
+  }
+  return false;
 }
 
 Formula proof_goal(Proof pf) {
@@ -722,6 +780,7 @@ void proof_free(Proof p) {
   free(p);
 }
 
+// Helper proof constructor functions
 Proof signed_proof(Pcpl sayer, Formula f) {
   Principal p = principal_pcpl(sayer);
   Formula goal = formula_signed(p, f);

@@ -4,7 +4,7 @@
 
 int push(Context c, Formula f) {
   if (c->topOfContext == c->size) {
-    printf("Stack is full\n");
+    printf("Context is full\n");
     return -1;
   }
   c->contextData[c->topOfContext] = f;
@@ -14,7 +14,7 @@ int push(Context c, Formula f) {
 
 Formula pop(Context c) {
   if (c->topOfContext == 0) {
-    printf("Stack is empty\n");
+    printf("Context is empty\n");
     return NULL;
   }
   c->topOfContext--;
@@ -49,7 +49,8 @@ bool member(Context c, Formula f){
       context_free(ctemp);
       return true;
     }
-    pop(ctemp);
+    formula_free(ftemp);
+    ftemp = pop(ctemp);
   }
   context_free(ctemp);
   return false;
@@ -63,5 +64,19 @@ Context context_cp(Context c){
     cret->contextData[i] = formula_cp(c->contextData[i]);
     i++;
   }
+  cret->topOfContext = c->topOfContext;
   return cret;
+}
+
+void context_print(Context c){
+  Formula ftemp;
+  Context ctemp = context_cp(c);
+  ftemp = pop(ctemp);
+  while(ftemp){
+    formula_print(ftemp);
+    printf("\n");
+    formula_free(ftemp);
+    ftemp = pop(ctemp);
+  }
+  context_free(ctemp);
 }
