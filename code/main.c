@@ -576,8 +576,75 @@ void test_formula_cp() {
   printf("Abs cp: 1 == %u\n", b);
 }
 
-void test_formula_subst();
-// For each formula type try a subst and compare the outputs
+void test_formula_subst(){
+  Formula f1;
+  Formula f2;
+  Formula f3;
+  Formula f4;
+  Formula f5;
+  Formula f6;
+  Formula f7;
+  Predicate pred1 = OK;
+  Predicate pred2 = ALRIGHT;
+  Var v0 = 0;
+  Var v1 = 1;
+  Pcpl pcplA = A;
+  Pcpl pcplB = B;
+  Principal prinA = principal_pcpl(pcplA);
+  Principal prinB = principal_pcpl(pcplB);
+  Principal prin0 = principal_var(v0);
+  Principal prin1 = principal_var(v1);
+  bool b;
+
+  f1 = formula_pred(pred1, prin0);
+  f2 = formula_subst(f1, v0, pcplA);
+  f3 = formula_pred(pred1, prinA);
+
+  formula_print(f1);
+  printf("\n");
+  formula_print(f2);
+  printf("\n");
+  formula_print(f3);
+  printf("\n");
+
+  b = formula_eq(f2, f3);
+  printf("Pred subst: 1 == %u\n", b);
+
+  f1 = formula_pred(pred1, prin0);
+  f2 = formula_pred(pred2, prin1);
+  f3 = formula_impl(f1, f2);
+  f4 = formula_subst(f3, v0, pcplA);
+  f5 = formula_pred(pred1, prinA);
+  f6 = formula_pred(pred2, prin0);
+  f7 = formula_impl(f5, f6);
+  b = formula_eq(f4, f7);
+  printf("Impl subst: 1 == %u\n", b);
+
+  f3 = formula_signed(prin1, f1);
+  f4 = formula_subst(f3, v1, pcplA);
+  f5 = formula_signed(prinA, f1);
+  b = formula_eq(f4, f5);
+  printf("Signed subst: 1 == %u\n", b);
+
+  f3 = formula_confirms(prin1, f1);
+  f4 = formula_subst(f3, v1, pcplA);
+  f5 = formula_confirms(prinA, f1);
+  b = formula_eq(f4, f5);
+  printf("Confirms subst: 1 == %u\n", b);
+
+  f3 = formula_says(prin1, f1);
+  f4 = formula_subst(f3, v1, pcplA);
+  f5 = formula_says(prinA, f1);
+  b = formula_eq(f4, f5);
+  printf("Says subst: 1 == %u\n", b);
+
+  f3 = formula_abs(f2);
+  f4 = formula_subst(f3, v0, pcplA);
+  f5 = formula_pred(pred2, prinA);
+  f6 = formula_abs(f5);
+  b = formula_eq(f4, f6);
+  printf("Abs cp: 1 == %u\n", b);
+}
 
 int main() {
 //  printall();
@@ -586,5 +653,6 @@ int main() {
 //  test_principal_subst();
 //  test_formula_eq();
 //  test_formula_cp();
+//  test_formula_subst();
   return 0;
 }
