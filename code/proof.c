@@ -48,6 +48,8 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (f->type != IMPL_F)
       goto invalid_proof;
     // Check the proof with f1 added to the context
+    if (!c)
+      c = context_alloc(10);
     flag = push(c, f->form.impl_f.formula2);
     if (flag < 0)
       return false;
@@ -100,6 +102,8 @@ bool proof_check(Formula f, Proof pf, Context c) {
       return false;
 
     // Check the proof in the context with f1 added
+    if (!c)
+      c = context_alloc(10);
     flag = push(c, pg1->form.confirms_f.formula);
     return proof_check(f, p2, c);
   case SAYS_SIGNED_R:
@@ -122,6 +126,8 @@ bool proof_check(Formula f, Proof pf, Context c) {
       return false;
 
     // Check the proof in the context with f1 added
+    if (!c)
+      c = context_alloc(10);
     flag = push(c, pg1->form.signed_f.formula);
     return proof_check(f, p2, c);
   case SAYS_SAYS_R:
@@ -144,6 +150,8 @@ bool proof_check(Formula f, Proof pf, Context c) {
       return false;
 
     // Check the proof in the context with f1 added
+    if (!c)
+      c = context_alloc(10);
     flag = push(c, pg1->form.says_f.formula);
     return proof_check(f, p2, c);
   case SAYS_SPEC_R:
@@ -173,6 +181,8 @@ bool proof_check(Formula f, Proof pf, Context c) {
     Pcpl pcpl = pf->r.says_spec_r.p;
     Formula f1 = pg1->form.says_f.formula->form.abs_f.formula;
     Formula f1_subst = formula_subst(f1, 0, pcpl);
+    if (!c)
+      c = context_alloc(10);
     push(c, f1);
     return proof_check(f, p2, c);
 

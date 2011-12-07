@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <context.h>
 
+// TODO auto expand Context
 int push(Context c, Formula f) {
   if (c->topOfContext == c->size) {
     printf("Context is full\n");
