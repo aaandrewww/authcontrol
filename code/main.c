@@ -1024,11 +1024,23 @@ void test_proof_check_signed() {
   bool b = proof_check(f, p, NULL);
   if (b != 1)
     printf("ERROR: signed proof check: 1 == %u\n", b);
+}
+
+void test_proof_check_signed_bad() {
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Formula f = formula_signed(prinA, fpred);
+  Proof p = proof_signed(f);
+
+//  proof_print(p);
+//  printf("\\\\\\\\ \n");
 
   Formula f2 = formula_signed(prinB, fpred);
   p = proof_signed(f2);
   printf("Expected error:\n");
-  b = proof_check(f, p, NULL);
+  bool b = proof_check(f, p, NULL);
   printf(":End expected\n\n");
   if (b != 0)
     printf("ERROR: signed proof check (bad): 0 == %u\n", b);
@@ -1047,10 +1059,21 @@ void test_proof_check_confirms() {
   bool b = proof_check(f, p, NULL);
   if (b != 1)
     printf("ERROR: confirms proof check: 1 == %u\n", b);
+}
+
+void test_proof_check_confirms_bad() {
+  Principal prinA = principal_pcpl(A);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Formula f = formula_confirms(prinA, fpred);
+  Proof p = proof_confirms(f);
+
+//  proof_print(p);
+//  printf("\\\\\\\\ \n");
 
   Formula f2 = formula_signed(prinA, fpred);
   printf("Expected error:\n");
-  b = proof_check(f2, p, NULL);
+  bool b = proof_check(f2, p, NULL);
   printf(":End expected\n\n");
   if (b != 0)
     printf("ERROR: signed/confirms proof check: 0 == %u\n", b);
@@ -1073,17 +1096,33 @@ void test_proof_check_tauto() {
   bool b = proof_check(f1, p2, c);
   if (b != 1)
     printf("ERROR: tauto proof check: 1 == %u\n", b);
+}
+
+void test_proof_check_tauto_bad() {
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Formula f1 = formula_says(prinB, fpred);
+  Proof p1 = proof_assump(fpred);
+  Proof p2 = proof_tauto(f1, p1);
+  Context c = context_alloc(1);
+  push(c, fpred);
+
+//  proof_print(p2);
+//  printf("\\\\\\\\ \n");
 
   Formula fpred2 = formula_pred(pred, prinB);
   f1 = formula_says(prinB, fpred2);
   p1 = proof_assump(fpred);
   p2 = proof_tauto(f1, p1);
   printf("Expected error:\n");
-  b = proof_check(fpred, p2, c);
+  bool b = proof_check(fpred, p2, c);
   printf(":End expected\n\n");
   if (b != 0)
     printf("ERROR: tauto proof check (bad): 0 == %u\n", b);
 }
+
 
 void test_proof_check_weaken_impl() {
   Principal prinA = principal_pcpl(A);
@@ -1129,9 +1168,7 @@ void test_proof_check_impl() {
 
 void test_proof_check_says_confirms() {
   Principal prinA = principal_pcpl(A);
-  Principal prinB = principal_pcpl(B);
   Predicate predOK = OK;
-  Predicate predALRIGHT = ALRIGHT;
   Formula f1 = formula_pred(predOK, prinA);
   Formula f2 = formula_cp(f1);
 
@@ -1154,9 +1191,7 @@ void test_proof_check_says_confirms() {
 
 void test_proof_check_says_signed() {
   Principal prinA = principal_pcpl(A);
-  Principal prinB = principal_pcpl(B);
   Predicate predOK = OK;
-  Predicate predALRIGHT = ALRIGHT;
   Formula f1 = formula_pred(predOK, prinA);
   Formula f2 = formula_cp(f1);
 
@@ -1177,11 +1212,51 @@ void test_proof_check_says_signed() {
 }
 
 void test_proof_check_says_says() {
+  Principal prinA = principal_pcpl(A);
+  Predicate predOK = OK;
+  Formula f1 = formula_pred(predOK, prinA);
+  Formula f2 = formula_cp(f1);
 
+  Formula Asays1 = formula_says(prinA, f1);
+  Formula Asays2 = formula_says(prinA, f2);
+  Proof p1 = proof_assump(Asays1);
+  Proof p_f1 = proof_assump(f1);
+  Proof p2 = proof_tauto(Asays2, p_f1);
+  Proof p3 = proof_says_says(Asays2, p1, p2);
+  Context c = context_alloc(10);
+  push(c,Asays1);
+
+//  proof_print(p3);
+//  printf("\\\\\\\\ \n");
+
+  bool b = proof_check(Asays2, p3, c);
+  if (b != 1)
+    printf("ERROR: says_says proof check: 1 == %u\n", b);
 }
 
 void test_proof_check_says_spec() {
+  Principal prinA = principal_pcpl(A);
+  Principal prin0 = principal_var(0);
+  Predicate predOK = OK;
+  Formula f1 = formula_pred(predOK, prin0);
+  Formula f2 = formula_pred(predOK, prinA);
+  Formula abs1 = formula_abs(f1);
 
+  Formula AsaysAbs1 = formula_says(prinA, abs1);
+  Formula Asays2 = formula_says(prinA, f2);
+  Proof p1 = proof_assump(AsaysAbs1);
+  Proof p_f2 = proof_assump(f2);
+  Proof p2 = proof_tauto(Asays2, p_f2);
+  Proof p3 = proof_says_spec(Asays2, prinA->prin.pcpl, p1, p2);
+  Context c = context_alloc(10);
+  push(c, AsaysAbs1);
+
+//  proof_print(p3);
+//  printf("\\\\\\\\ \n");
+
+  bool b = proof_check(Asays2, p3, c);
+  if (b != 1)
+    printf("ERROR: says_spec proof check: 1 == %u\n", b);
 }
 
 void test_proof_check_delegation() {
@@ -1198,7 +1273,6 @@ void test_proof_check_delegation() {
   Formula BsaysOKC = formula_says(prinB, OKC);
   Formula impl = formula_impl(BsaysOKC, OKC);
   push(c, impl);
-  printf("\n\n\n\n");
   b = proof_check(AsaysOKC, delegation, c);
 
   if (b != 1)
@@ -1214,6 +1288,7 @@ void test_proof_check() {
   test_proof_check_impl();
   test_proof_check_says_confirms();
   test_proof_check_says_signed();
+  test_proof_check_says_says();
   test_proof_check_delegation();
 }
 
