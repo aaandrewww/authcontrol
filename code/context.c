@@ -1,16 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <context.h>
+#include <string.h>
 
-// TODO auto expand Context
-int push(Context c, Formula f) {
-  if (c->topOfContext == c->size) {
-    printf("Context is full\n");
-    return -1;
+void push(Context *c, Formula f) {
+  // If the push will overflow the given context double the size
+  if ((*c)->topOfContext == (*c)->size) {
+    uint32_t newSize = (*c)->size*2;
+    Context cNew = context_alloc(newSize);
+    if(!cNew) {
+      printf("ERROR: Context is full and we are out of memory. "
+          "Formula was not added\n");
+      return;
+    }
+    memcpy(cNew->contextData, (*c)->contextData, (*c)->size*sizeof(Formula));
+    cNew->size = newSize;
+    cNew->topOfContext = (*c)->topOfContext;
+    *c = cNew;
   }
-  c->contextData[c->topOfContext] = f;
-  c->topOfContext++;
-  return 0;
+  Formula fCopy = formula_cp(f);
+  (*c)->contextData[(*c)->topOfContext] = fCopy;
+  (*c)->topOfContext++;
 }
 
 Formula pop(Context c) {
@@ -18,7 +28,6 @@ Formula pop(Context c) {
     return NULL;
   }
   if (c->topOfContext == 0) {
-    printf("Context is empty\n");
     return NULL;
   }
   c->topOfContext--;
@@ -34,11 +43,19 @@ Context context_alloc(uint32_t size) {
 
   c->size = size;
   c->topOfContext = 0;
-  c->contextData = malloc(size * sizeof(struct formula));
+  c->contextData = malloc(size * sizeof(Formula));
   return c;
 }
 
 void context_free(Context c) {
+  Formula f;
+  f = pop(c);
+
+  while (f) {
+    formula_free(f);
+    f = pop(c);
+  }
+
   free(c->contextData);
   free(c);
 }

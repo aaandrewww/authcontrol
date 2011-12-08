@@ -201,102 +201,6 @@ void print_delegation() {
   proof_free(dpf);
 }
 
-void print_context() {
-  Principal p1 = principal_pcpl(A);
-  Formula f1 = formula_pred(OK, p1);
-
-  Principal p2 = principal_pcpl(B);
-  Formula f2 = formula_pred(ALRIGHT, p2);
-
-  Principal p3 = principal_pcpl(C);
-  Formula f3 = formula_pred(OK, p3);
-
-  Principal p4 = principal_pcpl(D);
-  Formula f4 = formula_pred(ALRIGHT, p4);
-
-  Principal p5 = principal_pcpl(E);
-  Formula f5 = formula_pred(OK, p5);
-
-  Principal p6 = principal_pcpl(F);
-  Formula f6 = formula_pred(ALRIGHT, p6);
-
-  Principal p7 = principal_pcpl(G);
-  Formula f7 = formula_pred(OK, p7);
-
-  Context c = context_alloc(7);
-  printf("\\text{Loading context} \\\\ \n");
-  printf("1");
-  push(c, f1);
-  printf("2");
-  push(c, f2);
-  printf("3");
-  push(c, f3);
-  printf("4");
-  push(c, f4);
-  printf("5");
-  push(c, f5);
-  printf("6");
-  push(c, f6);
-  printf("7");
-  push(c, f7);
-  printf("8 \\\\ \n");
-  push(c, f1);
-
-  printf("\\\\ \n \\text{Printing context} \\\\ \n");
-  context_print(c);
-}
-
-void printall() {
-  printf("$ \n");
-  printf("\\text{Principal } 1 == A \\\\ \n");
-  printf("\\text{Principal } 2 == B \\\\ \n");
-  printf("\\text{Principal } 3 == C \\\\ \n");
-  printf("\\text{Principal } 4 == D \\\\ \n");
-  printf("\\text{Principal } 5 == E \\\\ \n");
-  printf("\\text{Principal } 6 == F \\\\ \n");
-  printf("\\text{Principal } 7 == G \\\\ \n");
-  printf("\\text{Predicate } 99 == OK \\\\ \n");
-  printf("\\text{Predicate } 100 == ALRIGHT \\\\ \n");
-  print_pred();
-  printf(" \\\\\\\\ \n");
-  print_impl();
-  printf(" \\\\\\\\ \n");
-  print_signed();
-  printf(" \\\\\\\\ \n");
-  print_says();
-  printf(" \\\\\\\\ \n");
-  print_confirms();
-  printf(" \\\\\\\\ \n");
-  print_abs();
-  printf(" \\\\\\\\ \n");
-  print_context();
-  printf(" \\\\\\\\ \n");
-  print_signed_p();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_confirms_p();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_assump_p();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_tauto_p();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_weaken_impl_p();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_impl_p();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_says_confirms();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_says_signed();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_says_says();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  print_says_spec();
-  printf(" \\\\\\\\\\\\\\\\ \n");
-  printf("$ \n");
-  printf("\\begin{landscape} \n $");
-  print_delegation();
-  printf("$ \n \\end{landscape} \n ");
-}
-
 void test_principal_eq() {
   Principal p1;
   Principal p2;
@@ -996,7 +900,7 @@ void test_proof_check_assump() {
   Formula fpred = formula_pred(pred, prinA);
   Proof pf = proof_assump(fpred);
   bool b;
-  push(c, fpred);
+  push(&c, fpred);
 
 //  proof_print(pf);
 //  printf("\\\\\\\\ \n");
@@ -1088,7 +992,7 @@ void test_proof_check_tauto() {
   Proof p1 = proof_assump(fpred);
   Proof p2 = proof_tauto(f1, p1);
   Context c = context_alloc(1);
-  push(c, fpred);
+  push(&c, fpred);
 
 //  proof_print(p2);
 //  printf("\\\\\\\\ \n");
@@ -1107,7 +1011,7 @@ void test_proof_check_tauto_bad() {
   Proof p1 = proof_assump(fpred);
   Proof p2 = proof_tauto(f1, p1);
   Context c = context_alloc(1);
-  push(c, fpred);
+  push(&c, fpred);
 
 //  proof_print(p2);
 //  printf("\\\\\\\\ \n");
@@ -1155,8 +1059,8 @@ void test_proof_check_impl() {
   Proof p2 = proof_assump(f1);
   Proof p3 = proof_impl(fpred2, p1, p2);
   Context c = context_alloc(10);
-  push(c, f1);
-  push(c, fpred1);
+  push(&c, f1);
+  push(&c, fpred1);
 
 //  proof_print(p3);
 //  printf("\\\\\\\\ \n");
@@ -1224,7 +1128,7 @@ void test_proof_check_says_says() {
   Proof p2 = proof_tauto(Asays2, p_f1);
   Proof p3 = proof_says_says(Asays2, p1, p2);
   Context c = context_alloc(10);
-  push(c,Asays1);
+  push(&c,Asays1);
 
 //  proof_print(p3);
 //  printf("\\\\\\\\ \n");
@@ -1249,7 +1153,7 @@ void test_proof_check_says_spec() {
   Proof p2 = proof_tauto(Asays2, p_f2);
   Proof p3 = proof_says_spec(Asays2, prinA->prin.pcpl, p1, p2);
   Context c = context_alloc(10);
-  push(c, AsaysAbs1);
+  push(&c, AsaysAbs1);
 
 //  proof_print(p3);
 //  printf("\\\\\\\\ \n");
@@ -1272,7 +1176,7 @@ void test_proof_check_delegation() {
   Context c = context_alloc(10);
   Formula BsaysOKC = formula_says(prinB, OKC);
   Formula impl = formula_impl(BsaysOKC, OKC);
-  push(c, impl);
+  push(&c, impl);
   b = proof_check(AsaysOKC, delegation, c);
 
   if (b != 1)
@@ -1292,9 +1196,121 @@ void test_proof_check() {
   test_proof_check_delegation();
 }
 
-int main() {
-//  printall();
-  printf("Starting tests\n\n");
+Context create_context(){
+  Principal p1 = principal_pcpl(A);
+  Formula f1 = formula_pred(OK, p1);
+
+  Principal p2 = principal_pcpl(B);
+  Formula f2 = formula_pred(ALRIGHT, p2);
+
+  Principal p3 = principal_pcpl(C);
+  Formula f3 = formula_pred(OK, p3);
+
+  Principal p4 = principal_pcpl(D);
+  Formula f4 = formula_pred(ALRIGHT, p4);
+
+  Principal p5 = principal_pcpl(E);
+  Formula f5 = formula_pred(OK, p5);
+
+  Principal p6 = principal_pcpl(F);
+  Formula f6 = formula_pred(ALRIGHT, p6);
+
+  Principal p7 = principal_pcpl(G);
+  Formula f7 = formula_pred(OK, p7);
+
+  Context c = context_alloc(4);
+  push(&c, f1);
+  push(&c, f2);
+  push(&c, f3);
+  push(&c, f4);
+  push(&c, f5);
+  push(&c, f6);
+  push(&c, f7);
+  push(&c, f1);
+
+  return c;
+}
+
+void print_context() {
+  Context c = create_context();
+  context_print(c);
+}
+
+void free_context() {
+  Context c = create_context();
+  context_free(c);
+}
+
+void member_context(){
+  Context c = create_context();
+  Principal p1 = principal_pcpl(A);
+  Principal p2 = principal_pcpl(B);
+  Formula f1 = formula_pred(OK, p1);
+  Formula f2 = formula_pred(OK, p2);
+
+  bool b = member(c, f1);
+  if (b != 1)
+    printf("ERROR: f1 is in the context 1 == %u\n", b);
+  b = member(c, f2);
+  if (b != 0)
+    printf("ERROR: f2 is not in the context 0 == %u\n", b);
+}
+
+void printall() {
+  printf("$ \n");
+  printf("\\text{Principal } 1 == A \\\\ \n");
+  printf("\\text{Principal } 2 == B \\\\ \n");
+  printf("\\text{Principal } 3 == C \\\\ \n");
+  printf("\\text{Principal } 4 == D \\\\ \n");
+  printf("\\text{Principal } 5 == E \\\\ \n");
+  printf("\\text{Principal } 6 == F \\\\ \n");
+  printf("\\text{Principal } 7 == G \\\\ \n");
+  printf("\\text{Predicate } 99 == OK \\\\ \n");
+  printf("\\text{Predicate } 100 == ALRIGHT \\\\\\\\ \n");
+  printf("\\text{PRINTING FORMULAE} \\\\\\\\ \n");
+  print_pred();
+  printf(" \\\\\\\\ \n");
+  print_impl();
+  printf(" \\\\\\\\ \n");
+  print_signed();
+  printf(" \\\\\\\\ \n");
+  print_says();
+  printf(" \\\\\\\\ \n");
+  print_confirms();
+  printf(" \\\\\\\\ \n");
+  print_abs();
+  printf(" \\\\\\\\ \n");
+  printf("\\text{PRINTING CONTEXT} \\\\\\\\ \n");
+  print_context();
+  printf(" \\\\\\\\ \n");
+  printf("\\text{PRINTING PROOFS} \\\\\\\\ \n");
+  print_signed_p();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_confirms_p();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_assump_p();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_tauto_p();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_weaken_impl_p();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_impl_p();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_says_confirms();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_says_signed();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_says_says();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  print_says_spec();
+  printf(" \\\\\\\\\\\\\\\\ \n");
+  printf("$ \n");
+  printf("\\begin{landscape} \n $");
+  print_delegation();
+  printf("$ \n \\end{landscape} \n ");
+}
+
+void testall(){
   test_principal_eq();
   test_principal_cp();
   test_principal_subst();
@@ -1303,7 +1319,15 @@ int main() {
   test_formula_subst();
   test_proof_eq();
   test_proof_check();
-  printf("\nFinished tests\n");
+  member_context();
+  free_context();
+}
 
+int main() {
+  printall();
+  printf("\n\nSTARTING TESTS\n\n");
+  printf("should be empty\n\n");
+  testall();
+  printf("FINISHED tests\n\n");
   return 0;
 }
