@@ -58,7 +58,7 @@
 \begin{tabular}{llcl}
 \emph{principals} & R & ::= & $x$ \bnfsep $v$ \\
 \emph{predicates} & P & ::= & $pred(R)$ \\
-\emph{formulas} & F & ::= & $P$ \bnfsep \imp{F_1}{F_2} \bnfsep \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F} \\
+\emph{formulas} & F & ::= & $P$ \bnfsep \imp{F_1}{F_2} \bnfsep \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F} \bnfsep \abs{F}\\
 \emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,$F$ \\
 \end{tabular}
 
@@ -119,6 +119,7 @@ $\trfrac[\;says]{\says{A}{F_1} \quad \says{A}{F_2} \with{F_1}}{\says{A}{F_2}}$ \
 $\trfrac[\;spec]{\says{A}{(\abs{F_1})} \quad p \quad \says{A}{F_2} \with{F_1\subst{p}{x}}}{\says{A}{F_2}}$
 }
 
+\begin{comment}
 \begin{landscape}
 \section{Examples}
 
@@ -127,5 +128,6 @@ $\trfrac[\;spec]{\says{A}{(\abs{F_1})} \quad p \quad \says{A}{F_2} \with{F_1\sub
 $\trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{0}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}{\says{0}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}}{\says{0}{\abs{\imp{\says{1}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad 2 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{1}{\pred{99}{2}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{99}{2}}}{\says{1}{\pred{99}{2}}}}{\says{1}{\pred{99}{2}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{1}{\pred{99}{2}}}{\pred{99}{2}}}}{\pred{99}{2}}}{\says{0}{\pred{99}{2}}}}{\says{0}{\pred{99}{2}}}$
 }
 \end{landscape}
+\end{comment}
 
 \end{document}

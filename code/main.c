@@ -996,8 +996,11 @@ void test_proof_check_assump() {
   Formula fpred = formula_pred(pred, prinA);
   Proof pf = proof_assump(fpred);
   bool b;
-
   push(c, fpred);
+
+//  proof_print(pf);
+//  printf("\\\\\\\\ \n");
+
   b = proof_check(fpred, pf, c);
   if (b != 1)
     printf("ERROR: assump proof check: 1 == %u\n", b);
@@ -1014,6 +1017,10 @@ void test_proof_check_signed() {
   Formula fpred = formula_pred(pred, prinA);
   Formula f = formula_signed(prinA, fpred);
   Proof p = proof_signed(f);
+
+//  proof_print(p);
+//  printf("\\\\\\\\ \n");
+
   bool b = proof_check(f, p, NULL);
   if (b != 1)
     printf("ERROR: signed proof check: 1 == %u\n", b);
@@ -1033,6 +1040,10 @@ void test_proof_check_confirms() {
   Formula fpred = formula_pred(pred, prinA);
   Formula f = formula_confirms(prinA, fpred);
   Proof p = proof_confirms(f);
+
+//  proof_print(p);
+//  printf("\\\\\\\\ \n");
+
   bool b = proof_check(f, p, NULL);
   if (b != 1)
     printf("ERROR: confirms proof check: 1 == %u\n", b);
@@ -1053,9 +1064,11 @@ void test_proof_check_tauto() {
   Formula f1 = formula_says(prinB, fpred);
   Proof p1 = proof_assump(fpred);
   Proof p2 = proof_tauto(f1, p1);
-
   Context c = context_alloc(1);
   push(c, fpred);
+
+//  proof_print(p2);
+//  printf("\\\\\\\\ \n");
 
   bool b = proof_check(f1, p2, c);
   if (b != 1)
@@ -1082,6 +1095,10 @@ void test_proof_check_weaken_impl() {
   Formula f1 = formula_impl(fpred1, fpred1);
   Proof p1 = proof_assump(fpred1);
   Proof p2 = proof_weaken_impl(f1, p1);
+
+//  proof_print(p2);
+//  printf("\\\\\\\\ \n");
+
   bool b = proof_check(f1, p2, NULL);
   if (b != 1)
     printf("ERROR: weaken_impl proof check: 1 == %u\n", b);
@@ -1101,6 +1118,10 @@ void test_proof_check_impl() {
   Context c = context_alloc(10);
   push(c, f1);
   push(c, fpred1);
+
+//  proof_print(p3);
+//  printf("\\\\\\\\ \n");
+
   bool b = proof_check(fpred2, p3, c);
   if (b != 1)
     printf("ERROR: impl proof check: 1 == %u\n", b);
@@ -1122,6 +1143,10 @@ void test_proof_check_says_confirms() {
   Proof p2 = proof_tauto(Asays2, p_f1);
   Proof p3 = proof_says_confirms(Asays2, p1, p2);
   Context c = context_alloc(10);
+
+//  proof_print(p3);
+//  printf("\\\\\\\\ \n");
+
   bool b = proof_check(Asays2, p3, NULL);
   if (b != 1)
     printf("ERROR: says_confirms proof check: 1 == %u\n", b);
@@ -1142,6 +1167,10 @@ void test_proof_check_says_signed() {
   Proof p_f1 = proof_assump(f1);
   Proof p2 = proof_tauto(Asays2, p_f1);
   Proof p3 = proof_says_signed(Asays2, p1, p2);
+
+//  proof_print(p3);
+//  printf("\\\\\\\\ \n");
+
   bool b = proof_check(Asays2, p3, NULL);
   if (b != 1)
     printf("ERROR: says_signed proof check: 1 == %u\n", b);
@@ -1155,6 +1184,27 @@ void test_proof_check_says_spec() {
 
 }
 
+void test_proof_check_delegation() {
+  Proof dpf = delegate_from_signed(A, B, OK);
+  Proof apf = approval_from_signed(B, OK, C);
+  Proof delegation = use_delegation(A, B, C, OK, dpf, apf);
+  Principal prinA = principal_pcpl(A);
+  Principal prinB = principal_pcpl(B);
+  Principal prinC = principal_pcpl(C);
+  Formula OKC = formula_pred(OK, prinC);
+  Formula AsaysOKC = formula_says(prinA, OKC);
+  bool b;
+  Context c = context_alloc(10);
+  Formula BsaysOKC = formula_says(prinB, OKC);
+  Formula impl = formula_impl(BsaysOKC, OKC);
+  push(c, impl);
+  printf("\n\n\n\n");
+  b = proof_check(AsaysOKC, delegation, c);
+
+  if (b != 1)
+    printf("ERROR: delegation proof check: 1 == %u\n", b);
+}
+
 void test_proof_check() {
   test_proof_check_assump();
   test_proof_check_signed();
@@ -1164,6 +1214,7 @@ void test_proof_check() {
   test_proof_check_impl();
   test_proof_check_says_confirms();
   test_proof_check_says_signed();
+  test_proof_check_delegation();
 }
 
 int main() {
