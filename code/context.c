@@ -3,12 +3,13 @@
 #include <context.h>
 #include <string.h>
 
+// Push a new formula onto the Context stack.  Copies the formula.
 void push(Context *c, Formula f) {
   // If the push will overflow the given context double the size
   if ((*c)->topOfContext == (*c)->size) {
-    uint32_t newSize = (*c)->size*2;
+    uint32_t newSize = (*c)->size * 2;
     Context cNew = context_alloc(newSize);
-    if(!cNew) {
+    if (!cNew) {
       printf("ERROR: Context is full and we are out of memory. "
           "Formula was not added\n");
       return;
@@ -24,12 +25,12 @@ void push(Context *c, Formula f) {
 }
 
 Formula pop(Context c) {
-  if (c == NULL) {
+  if (c == NULL)
     return NULL;
-  }
-  if (c->topOfContext == 0) {
+
+  if (c->topOfContext == 0)
     return NULL;
-  }
+
   c->topOfContext--;
   return c->contextData[c->topOfContext];
 }
@@ -47,6 +48,8 @@ Context context_alloc(uint32_t size) {
   return c;
 }
 
+// Frees the context and all the formulas below the stack pointer.
+// All these formulas are copies.
 void context_free(Context c) {
   Formula f;
   f = pop(c);
@@ -64,23 +67,20 @@ bool member(Context c, Formula f) {
   if (c == NULL)
     return false;
 
-  Formula ftemp;
-  Context ctemp = context_cp(c);
-  ftemp = pop(ctemp);
-
-  while (ftemp) {
-    if (formula_eq(f, ftemp)) {
-      context_free(ctemp);
+  int i = 0;
+  while (i < c->topOfContext) {
+    if (formula_eq(f, c->contextData[i]))
       return true;
-    }
-    formula_free(ftemp);
-    ftemp = pop(ctemp);
+    i++;
   }
-  context_free(ctemp);
   return false;
 }
 
+// Deep copy of the context. Also copies all the formulas below the stack pointer.
 Context context_cp(Context c) {
+  if (c == NULL)
+    return NULL;
+
   Context cret = context_alloc(c->size);
   int i = 0;
 
@@ -93,14 +93,13 @@ Context context_cp(Context c) {
 }
 
 void context_print(Context c) {
-  Formula ftemp;
-  Context ctemp = context_cp(c);
-  ftemp = pop(ctemp);
-  while (ftemp) {
-    formula_print(ftemp);
-    printf("\\\\ \n");
-    formula_free(ftemp);
-    ftemp = pop(ctemp);
+  if (c == NULL) {
+    return;
   }
-  context_free(ctemp);
+  int i = 0;
+  while (i < c->topOfContext) {
+    formula_print(c->contextData[i]);
+    printf("\n");
+    i++;
+  }
 }
