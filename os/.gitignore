@@ -1,0 +1,16 @@
+/obj
+/jos.in
+/jos.log
+/jos.out
+/jos.out.*
+/jos.cmd
+/.gdbinit
+/lab?-handin.tar.gz
+/lab?/
+/lab?.tar.gz
+/sol?/
+/sol?.tar.gz
+/prep?/
+/prep?.tar.gz
+/conf/lab.mk
+/kern/programs.c
