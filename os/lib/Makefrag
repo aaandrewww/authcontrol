@@ -34,7 +34,10 @@ LIB_SRCFILES :=		$(LIB_SRCFILES) \
 	     		lib/lock.c
 
 LIB_SRCFILES :=		$(LIB_SRCFILES) \
-	     		lib/mm.c
+	     		lib/mm.c \
+			lib/context.c \
+			lib/proof.c \
+			lib/formula.c
 
 
 LIB_OBJFILES := $(patsubst lib/%.c, $(OBJDIR)/lib/%.o, $(LIB_SRCFILES))

@@ -32,6 +32,11 @@ KERN_SRCFILES :=	kern/entry.S \
 			lib/string.c \
 			lib/rand.c
 
+KERN_SRCFILES :=	lib/mm.c \
+	      		lib/context.c \
+	      		lib/formula.c \
+			lib/proof.c
+
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 
@@ -80,7 +85,8 @@ KERN_BINFILES :=	user/idle \
 			user/primespipe \
 			user/testshell \
 			user/initsh \
-			fs/bufcache
+			fs/bufcache \
+			user/prooftest
 
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))
