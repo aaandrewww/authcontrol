@@ -2,8 +2,6 @@
 
 #include <inc/syscall.h>
 #include <inc/lib.h>
-#include <inc/formula.h>
-#include <inc/proof.h>
 
 static inline int32_t
 syscall(int num, int check, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
@@ -142,16 +140,4 @@ sys_program_read(envid_t dst_env, void *va,
 		 int programid, size_t offset, size_t len)
 {
 	return syscall(SYS_program_read, 0, dst_env, (uintptr_t) va, programid, offset, len);
-}
-
-int
-sys_set_goal(Formula goal)
-{
-  return syscall(SYS_set_goal, 0, (uintptr_t) goal, 0, 0, 0, 0);
-}
-
-int
-sys_set_proof(Proof proof)
-{
-  return syscall(SYS_set_proof, 0, (uintptr_t) proof, 0, 0, 0, 0);
 }

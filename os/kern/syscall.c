@@ -4,8 +4,6 @@
 #include <inc/error.h>
 #include <inc/string.h>
 #include <inc/assert.h>
-#include <inc/formula.h>
-#include <inc/proof.h>
 
 #include <kern/env.h>
 #include <kern/pmap.h>
@@ -533,18 +531,6 @@ sys_program_read(envid_t envid, uintptr_t va,
 	return size;
 }
 
-// Set the goal other envs need to prove to manipulate this env
-static int sys_set_goal(uintptr_t goal){
-  curenv->goal = (Formula)goal;
-  return 0;
-}
-
-// Set the proof to be used by the kernel when this env
-// wants to manipulate another.
-static int sys_set_proof(uintptr_t proof){
-  curenv->proof = (Proof)proof;
-  return 0;
-}
 
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
@@ -572,8 +558,6 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	case SYS_program_lookup: return sys_program_lookup(a1, a2);
 	case SYS_program_read: return sys_program_read(a1, a2, a3, a4, a5);
 	case SYS_env_set_trapframe: return sys_env_set_trapframe(a1, a2);
-	case SYS_set_goal: return sys_set_goal(a1);
-	case SYS_set_proof: return sys_set_proof(a1);
 	default: return -E_INVAL;
 	}
 

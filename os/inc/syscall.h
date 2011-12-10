@@ -21,8 +21,6 @@ enum {
 	SYS_ipc_recv,
 	SYS_program_lookup,
 	SYS_program_read,
-	SYS_set_goal,
-	SYS_set_proof,
 	NSYSCALLS
 };
 
