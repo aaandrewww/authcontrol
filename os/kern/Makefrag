@@ -30,9 +30,8 @@ KERN_SRCFILES :=	kern/entry.S \
 			lib/printfmt.c \
 			lib/readline.c \
 			lib/string.c \
-			lib/rand.c
-
-KERN_SRCFILES :=	lib/mm.c \
+			lib/rand.c \
+			lib/mm.c \
 	      		lib/context.c \
 	      		lib/formula.c \
 			lib/proof.c
