@@ -6,6 +6,8 @@
 #include <inc/types.h>
 #include <inc/trap.h>
 #include <inc/memlayout.h>
+#include <inc/proof.h>
+#include <inc/formula.h>
 
 typedef int32_t envid_t;
 
@@ -60,6 +62,9 @@ struct Env {
 	uint32_t env_ipc_value;		// data value sent to us
 	envid_t env_ipc_from;		// envid of the sender
 	int env_ipc_perm;		// perm of page mapping received
+	Proof proof; // pointer to a proof to use to access other envs
+	Formula goal; // Goal another env needs to prove to access this env
+	              // if null this defaults to parent only
 };
 
 #endif // !JOS_INC_ENV_H

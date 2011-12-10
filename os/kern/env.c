@@ -207,6 +207,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 		e->env_tf.tf_eflags = e->env_tf.tf_eflags | FL_IOPL_3;
 	}
 
+	e->proof = NULL;
+	e->goal = NULL;
+
 	// commit the allocation
 	env_free_list = e->env_link;
 	*newenv_store = e;
