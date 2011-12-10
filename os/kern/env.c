@@ -51,14 +51,21 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 		return -E_BAD_ENV;
 	}
 
-	// Check that the calling environment has legitimate permission
-	// to manipulate the specified environment.
-	// If checkperm is set, the specified environment
-	// must be either the current environment
-	// or an immediate child of the current environment.
-	if (checkperm && e != curenv && e->env_parent_id != curenv->env_id) {
-		*env_store = 0;
-		return -E_BAD_ENV;
+	// If checkperm is set, check that the calling environment 
+	// has legitimate permission to manipulate the specified environment.
+	if (checkperm) {
+		if (e->goal == NULL) { // No authorization goal set, 
+			               // use old parent-child relationship
+			               // (the specified environment must be 
+			               // either the current environment or an
+	                               // immediate child of the current environment.
+			if (e != curenv && e->env_parent_id != curenv->env_id) {
+				*env_store = 0;
+				return -E_BAD_ENV;
+			}
+		} else { // The environment set an authorization goal
+
+		}
 	}
 
 	*env_store = e;
