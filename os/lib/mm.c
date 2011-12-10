@@ -1,8 +1,11 @@
+#include <inc/types.h>
+#include <inc/lib.h>
+
 typedef uint32_t Align;    /* for alignment to long boundary */
 
 union header {             /* block header: */
     struct {
-	union header *prt; /* next block if on free list */
+	union header *ptr; /* next block if on free list */
 	unsigned size;     /* size of this block */
     } s;
     Align x;               /* force alignment of blocks */
@@ -13,15 +16,32 @@ typedef union header Header;
 static Header base;       /* empty list to get started */
 static Header *freep = NULL;     /* start of free list */
 
+#define MAX_HEAP 4194304  /* 4MB */
+
+static uint8_t theHeap[MAX_HEAP];
+static uint8_t *mem_brk = theHeap;
+static uint8_t *mem_max_addr = theHeap + MAX_HEAP;
+
+void *
+sbrk(size_t bytes)
+{
+    uint8_t *old_brk = mem_brk;
+
+    if ((bytes < 0) || ((mem_brk + bytes) > mem_max_addr)) {
+        return NULL;
+    }
+    mem_brk += bytes;
+    return (void *)old_brk;
+}
+
 /* morecore: get more memory from the operating system */
 Header *
 morecore(uint32_t nunits)
 {
+    uint8_t *cp;
     Header *up;
 
-    if (nunits < NALLOC)
-	nunits = NALLOC;
-    cp = sbrk(nunits * sizeof(Header));
+    cp = (uint8_t *)sbrk(nunits * sizeof(Header));
     if (cp == NULL)                 /* no space at all */
 	return NULL;
     up = (Header *) cp;
@@ -77,7 +97,7 @@ free(void *ap)
     } else {
 	bp->s.ptr = p->s.ptr;
     }
-    if (p + p->size == bp) {          /* join to lower nbr */
+    if (p + p->s.size == bp) {          /* join to lower nbr */
 	p->s.size += bp->s.size;
 	p->s.ptr = bp->s.ptr;
     } else {
@@ -90,5 +110,6 @@ free(void *ap)
 void
 freeall(void)
 {
+    mem_brk = theHeap;
     freep = NULL;
 }

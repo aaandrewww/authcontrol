@@ -81,6 +81,11 @@ sys_exofork(void)
 	return ret;
 }
 
+// mm.c
+void *  malloc(size_t bytes);
+void    free(void *p);
+void    freeall(void);
+
 // dumbfork.c
 envid_t	dumbfork(void);
 
