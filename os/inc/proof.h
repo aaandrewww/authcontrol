@@ -124,6 +124,7 @@ struct proof {
 void proof_print(Proof pf);
 bool proof_eq(Proof pf1, Proof pf2);
 Proof proof_cp(Proof pf);
+Proof proof_cp_to(Proof pf, void *addr);
 Formula proof_goal(Proof pf);
 bool proof_check(Formula f, Proof pf, Context c);
 void proof_free(Proof pf);

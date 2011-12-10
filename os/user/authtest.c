@@ -39,6 +39,8 @@ void umain(int argc, char **argv) {
 		Proof parent_ok = says_from_signed(thisenv->env_id, formula_subst(goal, 0, thisenv->env_parent_id));
 		proof_print(parent_ok);
 		cprintf("\n");
+		cprintf("Checking:\n");
+		cprintf("%d\n", proof_check(formula_says(principal_pcpl(thisenv->env_id), formula_subst(goal, 0, thisenv->env_parent_id)), parent_ok, NULL));
 		send_proof(thisenv->env_parent_id, parent_ok);
 	}
 }
