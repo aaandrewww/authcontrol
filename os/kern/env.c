@@ -13,11 +13,26 @@
 #include <kern/monitor.h>
 #include <kern/sched.h>
 
+#include <inc/mm.h>
+
 struct Env *envs = NULL;		// All environments
 struct Env *curenv = NULL;		// The current env
 struct Env *env_free_list = NULL;	// Free list
 
 #define ENVGENSHIFT	12		// >= LOGNENV
+
+bool
+check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {
+	lcr3(PADDR(goalEnv->env_pgdir));
+	Formula goal = formula_says(principal_pcpl(goalEnv->env_id), formula_subst(goalEnv->goal, 0, proverEnv->env_id));
+	lcr3(PADDR(proverEnv->env_pgdir));
+	Proof proof = proof_cp(proverEnv->proof);
+	
+	bool result = proof_check(goal, proof, NULL);
+	freeall();
+
+	return result;
+}
 
 //
 // Converts an envid to an env pointer.
@@ -64,7 +79,10 @@ envid2env(envid_t envid, struct Env **env_store, bool checkperm)
 				return -E_BAD_ENV;
 			}
 		} else { // The environment set an authorization goal
-
+			if (check_env_auth(e, curenv) != true) {
+				*env_store = 0;
+				return -E_BAD_ENV;
+			}
 		}
 	}
 
