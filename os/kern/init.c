@@ -60,8 +60,6 @@ i386_init(void)
 	// Lab 2 memory management initialization functions
 	mem_init();
 
-//  prooftest();
-
 	// Lab 2 interrupt and gate descriptor initialization functions
 	idt_init();
 

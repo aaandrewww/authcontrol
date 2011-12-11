@@ -53,7 +53,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, f->form.impl_f.formula2);
-    return proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof, c);
+    b = proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof, c);
+    pop(c);
+    return b;
   case IMPL_R:
     p1 = pf->r.impl_r.pf1;
     pg1 = proof_goal(p1);
@@ -105,7 +107,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, pg1->form.confirms_f.formula);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
   case SAYS_SIGNED_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -129,7 +133,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, pg1->form.signed_f.formula);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
   case SAYS_SAYS_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -153,7 +159,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, pg1->form.says_f.formula);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
   case SAYS_SPEC_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -184,7 +192,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, f1_subst);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
 
   case ASSUMP_R:
     b = member(c,f);
