@@ -562,9 +562,6 @@ sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap)
 
 static int
 sys_sign_formula(uintptr_t formula){
-  cprintf("Env %d signed ", curenv->env_id);
-  formula_print((Formula)formula);
-  cprintf("\n");
   add_to_signed_context((Formula)formula);
   return 0;
 }
