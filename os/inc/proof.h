@@ -144,6 +144,7 @@ Proof proof_says_spec(Formula goal, Pcpl p, Proof proof1, Proof proof2);
 Proof signed_proof(Pcpl sayer, Formula f);
 Proof says_from_assump(Pcpl sayer, Formula f);
 Proof says_from_signed(Pcpl sayer, Formula f);
+Proof says_from_confirms(Pcpl sayer, Formula f);
 Formula approve(Pcpl pcpl, Predicate pred);
 Proof approval_from_signed(Pcpl approver, Predicate pred, Pcpl pcpl);
 Formula delegate(Pcpl pcpl, Predicate pred);

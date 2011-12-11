@@ -13,6 +13,7 @@
 #include <kern/env.h>
 #include <kern/sched.h>
 #include <kern/picirq.h>
+#include <kern/prooftest.h>
 
 // Test the stack backtrace function (used in lab 1 only)
 void
@@ -58,6 +59,8 @@ i386_init(void)
 
 	// Lab 2 memory management initialization functions
 	mem_init();
+
+  prooftest();
 
 	// Lab 2 interrupt and gate descriptor initialization functions
 	idt_init();
@@ -131,7 +134,6 @@ i386_init(void)
         cprintf("\033[45m45\t");
         cprintf("\033[46m46\t");
         cprintf("\033[47m47\033[m\n");*/
-
 
 	// Drop into the kernel monitor (lab 1-2 only; not reached later)
 	while (1)

@@ -3,7 +3,9 @@
 #include <inc/proof.h>
 #include <inc/formula.h>
 #include <inc/context.h>
-#include <inc/lib.h>
+#include <kern/env.h>
+#include <kern/pmap.h>
+#include <inc/x86.h>
 
 // Debugging wrapper around formula_eq that prints out a message when fails
 bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
@@ -18,6 +20,33 @@ bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
     return false;
   }
   return true;
+}
+
+bool check_confirms(Confirms_f f){
+  // If the principal has not been substituted we cannot check so return false
+  if(f.principal->type != PCPL)
+    return false;
+
+  envid_t envid = f.principal->prin.pcpl;
+
+  const volatile struct Env *env = &envs[ENVX(envid)];
+
+  if (env->confirms_upcall == 0) return false;
+
+  lcr3(PADDR(env->env_pgdir));
+
+  Heap *oldHeap = set_heap(env->confirms_heap);
+  Formula formula = formula_cp(f.formula);
+  if (formula == NULL) {
+    set_heap(oldHeap);
+    lcr3(PADDR(curenv->env_pgdir));
+    return false;
+  }
+  bool result = ((bool (*)(Formula)) (env->confirms_upcall))(formula);
+  set_heap(oldHeap);
+  lcr3(PADDR(curenv->env_pgdir));
+
+  return result;
 }
 
 // Check that Proof, pf, is a valid proof of Formula, f, given Context, c
@@ -41,7 +70,12 @@ bool proof_check(Formula f, Proof pf, Context c) {
   case CONFIRMS_R:
     if (f->type != CONFIRMS_F)
       goto invalid_proof;
-    return true; // only for the lib version
+    b = check_confirms(f->form.confirms_f); // only for the lib version
+    if(!b){
+      cprintf("Confirmation failed\n");
+      goto invalid_proof;
+    }
+    return true;
   case TAUTO_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -53,7 +87,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, f->form.impl_f.formula2);
-    return proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof, c);
+    b = proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof, c);
+    pop(c);
+    return b;
   case IMPL_R:
     p1 = pf->r.impl_r.pf1;
     pg1 = proof_goal(p1);
@@ -105,7 +141,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, pg1->form.confirms_f.formula);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
   case SAYS_SIGNED_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -129,7 +167,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, pg1->form.signed_f.formula);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
   case SAYS_SAYS_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -153,7 +193,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, pg1->form.says_f.formula);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
   case SAYS_SPEC_R:
     if (f->type != SAYS_F)
       goto invalid_proof;
@@ -184,7 +226,9 @@ bool proof_check(Formula f, Proof pf, Context c) {
     if (!c)
       c = context_alloc(10);
     push(c, f1_subst);
-    return proof_check(f, p2, c);
+    b = proof_check(f, p2, c);
+    pop(c);
+    return b;
 
   case ASSUMP_R:
     b = member(c,f);
@@ -809,16 +853,6 @@ Proof signed_proof(Pcpl sayer, Formula f) {
   return proof;
 }
 
-Proof confirms_proof(Pcpl confirmer, Formula f) {
-  Principal p = principal_pcpl(confirmer);
-  Formula goal = formula_confirms(p, f);
-  Proof proof = proof_confirms(goal);
-
-  formula_free(goal);
-  free(p);
-  return proof;
-}
-
 Proof says_from_assump(Pcpl sayer, Formula f) {
   Principal p = principal_pcpl(sayer);
   Formula goal = formula_says(p, f);
@@ -843,20 +877,6 @@ Proof says_from_signed(Pcpl sayer, Formula f) {
   formula_free(goal);
   free(p);
   return sayssigned;
-}
-
-Proof says_from_confirms(Pcpl confirmer, Formula f) {
-  Principal p = principal_pcpl(confirmer);
-  Formula goal = formula_says(p, f);
-  Proof confirmsp = confirms_proof(confirmer, f);
-  Proof assumpp = says_from_assump(confirmer, f);
-  Proof saysconfirms = proof_says_confirms(goal, confirmsp, assumpp);
-
-  proof_free(assumpp);
-  proof_free(confirmsp);
-  formula_free(goal);
-  free(p);
-  return saysconfirms;
 }
 
 Formula approve(Pcpl pcpl, Predicate pred) {
