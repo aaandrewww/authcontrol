@@ -66,7 +66,16 @@ bool proof_check(Formula f, Proof pf, Context c) {
   case SIGNED_R:
     if (f->type != SIGNED_F)
       goto invalid_proof;
-    return true; // TODO check signatures
+    b = member(c,f);
+    if(!b){
+      cprintf("Signed formula: \n");
+      formula_print(f);
+      cprintf("\n not in context:\n");
+      context_print(c);
+      cprintf("\n");
+    }
+    return b;
+    //return true; // TODO check signatures
   case CONFIRMS_R:
     if (f->type != CONFIRMS_F)
       goto invalid_proof;
