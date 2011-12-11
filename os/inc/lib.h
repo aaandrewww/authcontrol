@@ -20,6 +20,7 @@
 #include <inc/fs.h>
 #include <inc/fd.h>
 #include <inc/args.h>
+#include <inc/mm.h>
 
 #define USED(x)		(void)(x)
 
@@ -82,11 +83,6 @@ sys_exofork(void)
 	);
 	return ret;
 }
-
-// mm.c
-void *  malloc(size_t bytes);
-void    free(void *p);
-void    freeall(void);
 
 // dumbfork.c
 envid_t	dumbfork(void);

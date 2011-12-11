@@ -1,36 +1,33 @@
 #include <inc/types.h>
 #include <inc/lib.h>
 
-typedef uint32_t Align;    /* for alignment to long boundary */
+static Heap *theHeap = NULL;
 
-union header {             /* block header: */
-    struct {
-	union header *ptr; /* next block if on free list */
-	unsigned size;     /* size of this block */
-    } s;
-    Align x;               /* force alignment of blocks */
-};
+void
+init_heap(Heap *newHeap, void *mem, size_t size)
+{
+    newHeap->heap = (uint8_t *)mem;
+    newHeap->mem_brk = newHeap->heap;
+    newHeap->size = size;
+    newHeap->freep = NULL;
+}
 
-typedef union header Header;
-
-static Header base;       /* empty list to get started */
-static Header *freep = NULL;     /* start of free list */
-
-#define MAX_HEAP 4194304  /* 4MB */
-
-static uint8_t theHeap[MAX_HEAP];
-static uint8_t *mem_brk = theHeap;
-static uint8_t *mem_max_addr = theHeap + MAX_HEAP;
+Heap *
+set_heap(Heap *heap){
+    Heap *oldHeap = theHeap;
+    theHeap = heap;
+    return oldHeap;
+}
 
 void *
 sbrk(size_t bytes)
 {
-    uint8_t *old_brk = mem_brk;
+    uint8_t *old_brk = theHeap->mem_brk;
 
-    if ((bytes < 0) || ((mem_brk + bytes) > mem_max_addr)) {
+    if ((bytes < 0) || ((theHeap->mem_brk + bytes) > theHeap->heap + theHeap->size)) {
         return NULL;
     }
-    mem_brk += bytes;
+    theHeap->mem_brk += bytes;
     return (void *)old_brk;
 }
 
@@ -47,7 +44,7 @@ morecore(uint32_t nunits)
     up = (Header *) cp;
     up->s.size = nunits;
     free((void *)(up+1));
-    return freep;
+    return theHeap->freep;
 }
 
 /* malloc: general purpose storage allocator */
@@ -58,9 +55,9 @@ malloc(size_t nbytes)
     uint32_t nunits;
 
     nunits = (nbytes+sizeof(Header)-1)/sizeof(Header) + 1;
-    if ((prevp = freep) == NULL) { /* no free list yet */
-	base.s.ptr = freep = prevp = &base;
-	base.s.size = 0;
+    if ((prevp = theHeap->freep) == NULL) { /* no free list yet */
+	theHeap->base.s.ptr = theHeap->freep = prevp = &theHeap->base;
+	theHeap->base.s.size = 0;
     }
     for (p = prevp->s.ptr; ; prevp = p, p = p->s.ptr) {
 	if (p->s.size >= nunits) {        /*big enough */
@@ -71,10 +68,10 @@ malloc(size_t nbytes)
 		p += p->s.size;
 		p->s.size = nunits;
 	    }
-	    freep = prevp;
+	    theHeap->freep = prevp;
 	    return (void *)(p+1);
 	}
-	if (p == freep)    /* wrapped around free list */
+	if (p == theHeap->freep)    /* wrapped around free list */
 	    if ((p = morecore(nunits)) == NULL)
 		return NULL;              /* none left */
     }
@@ -87,7 +84,7 @@ free(void *ap)
     Header *bp, *p;
 
     bp = (Header *)ap - 1;    /* point to block header */
-    for (p = freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
+    for (p = theHeap->freep; !(bp > p && bp < p->s.ptr); p = p->s.ptr)
 	if (p >= p->s.ptr && (bp > p || bp < p->s.ptr))
 	    break; /* freed block at start or end of arena */
 
@@ -103,13 +100,13 @@ free(void *ap)
     } else {
 	p->s.ptr = bp;
     }
-    freep = p;
+    theHeap->freep = p;
 }
 
 /* freeall: free all allocated memory */
 void
 freeall(void)
 {
-    mem_brk = theHeap;
-    freep = NULL;
+    theHeap->mem_brk = theHeap->heap;
+    theHeap->freep = NULL;
 }

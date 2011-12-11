@@ -6,41 +6,53 @@
 
 Proof receive_proof() {
 	size_t offset = (size_t) ipc_recv(NULL, UTEMP, NULL);
-	cprintf("Received a proof\n");
-	proof_print((Proof)((uintptr_t)UTEMP + offset));
-	//Proof p = proof_cp((Proof)((uint8_t *)UTEMP + (size_t)ret));
+	Proof p = proof_cp((Proof)((uint8_t *)UTEMP + offset));
 	sys_page_unmap(0, UTEMP);
-	return NULL;
-        //return p;
+        return p;
 }
 
 void send_proof(envid_t to, Proof p) {
-	// Assume the proof fits on one page...
-	uintptr_t page = ROUNDDOWN((uintptr_t)p, PGSIZE);
-	size_t offset = (uintptr_t)p - page;
-	cprintf("Sending proof at %08x on page %08x\n", offset, page);
-	ipc_send(to, offset, (void *)page, PTE_U);
-	proof_print((Proof)(page + offset));
+	// Copy the proof to UTEMP
+	sys_page_alloc(0, UTEMP, PTE_U | PTE_W);
+	Heap tempHeap;
+	init_heap(&tempHeap, UTEMP, PGSIZE);
+	Heap *oldHeap = set_heap(&tempHeap);
+	Proof copy = proof_cp(p);
+	size_t offset = (uintptr_t)copy - (uintptr_t)UTEMP;
+
+	// Send the proof
+	ipc_send(to, offset, UTEMP, PTE_U);
+	sys_page_unmap(0, UTEMP);
+
+	// Reset the heap
+	set_heap(oldHeap);
 }
 
+static uint8_t heapBuffer[PGSIZE];
+
 void umain(int argc, char **argv) {
+	Heap heap;
+	init_heap(&heap, &heapBuffer, PGSIZE);
+	set_heap(&heap);
+
 	envid_t who;
 	if ((who = fork()) != 0) {
 		// parent
 		Proof p = receive_proof();
 		proof_print(p);
+		
+		// Uncomment this line to allow parent to kill child
+                //sys_set_proof(p);
+		sys_env_destroy(who);
 	} else {
 		// child
 		Formula goal = formula_pred(OK, principal_var(0));
-		formula_print(goal);
-		cprintf("\n");
 		sys_set_goal(goal);
-		cprintf("Goal set.\n");
 		Proof parent_ok = says_from_signed(thisenv->env_id, formula_subst(goal, 0, thisenv->env_parent_id));
-		proof_print(parent_ok);
-		cprintf("\n");
-		cprintf("Checking:\n");
-		cprintf("%d\n", proof_check(formula_says(principal_pcpl(thisenv->env_id), formula_subst(goal, 0, thisenv->env_parent_id)), parent_ok, NULL));
 		send_proof(thisenv->env_parent_id, parent_ok);
+
+		while (true) {
+			
+		}
 	}
 }

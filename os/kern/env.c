@@ -21,15 +21,25 @@ struct Env *env_free_list = NULL;	// Free list
 
 #define ENVGENSHIFT	12		// >= LOGNENV
 
+static uint8_t authBuffer[PGSIZE];
+
 bool
 check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {
+	if (proverEnv->proof == NULL) return false;
+
+	Heap authHeap;
+	init_heap(&authHeap, &authBuffer, PGSIZE);
+	Heap *oldHeap = set_heap(&authHeap);
+
 	lcr3(PADDR(goalEnv->env_pgdir));
 	Formula goal = formula_says(principal_pcpl(goalEnv->env_id), formula_subst(goalEnv->goal, 0, proverEnv->env_id));
 	lcr3(PADDR(proverEnv->env_pgdir));
 	Proof proof = proof_cp(proverEnv->proof);
 	
 	bool result = proof_check(goal, proof, NULL);
+
 	freeall();
+	set_heap(oldHeap);
 
 	return result;
 }
