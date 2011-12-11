@@ -907,12 +907,18 @@ void test_proof_check_assump() {
 
 //  proof_print(pf);
 //  cprintf("\\\\\\\\ \n");
+}
 
+void test_proof_check_assump_bad() {
+  Context c = context_alloc(1);
+  Principal prinA = principal_pcpl(A);
+  Predicate pred = OK;
+  Formula fpred = formula_pred(pred, prinA);
+  Proof pf = proof_assump(fpred);
+  bool b;
+  cprintf("Expected error:\n");
   b = proof_check(fpred, pf, c);
-  if (b != 1)
-    cprintf("ERROR: assump proof check: 1 == %u\n", b);
-
-  b = proof_check(fpred, pf, NULL);
+  cprintf(":End expected\n\n");
   if (b != 0)
     cprintf("ERROR: assump proof check (bad context): 0 == %u\n", b);
 }
@@ -1188,15 +1194,21 @@ void test_proof_check_delegation() {
 
 void test_proof_check() {
   test_proof_check_assump();
-//  test_proof_check_signed();
-//  test_proof_check_confirms();
-//  test_proof_check_tauto();
-//  test_proof_check_weaken_impl();
-//  test_proof_check_impl();
-//  test_proof_check_says_confirms();
-//  test_proof_check_says_signed();
-//  test_proof_check_says_says();
-//  test_proof_check_delegation();
+  test_proof_check_signed();
+  test_proof_check_tauto();
+  test_proof_check_weaken_impl();
+  test_proof_check_impl();
+  test_proof_check_says_signed();
+  test_proof_check_says_says();
+  test_proof_check_delegation();
+}
+
+void proof_check_expected_failures() {
+  test_proof_check_confirms();
+  test_proof_check_says_confirms();
+  test_proof_check_assump_bad();
+  test_proof_check_signed_bad();
+  test_proof_check_confirms_bad();
 }
 
 Context create_context(){
@@ -1333,25 +1345,25 @@ void printall() {
 }
 
 void testall(){
-//  test_principal_eq();
-//  freeall();
-//  test_principal_cp();
-//  freeall();
-//  test_principal_subst();
-//  freeall();
-//  test_formula_eq();
-//  freeall();
-//  test_formula_cp();
-//  freeall();
-//  test_formula_subst();
-//  freeall();
-//  test_proof_eq();
-//  freeall();
+  test_principal_eq();
+  freeall();
+  test_principal_cp();
+  freeall();
+  test_principal_subst();
+  freeall();
+  test_formula_eq();
+  freeall();
+  test_formula_cp();
+  freeall();
+  test_formula_subst();
+  freeall();
+  test_proof_eq();
+  freeall();
   test_proof_check();
   freeall();
-//  member_context();
-//  freeall();
-//  free_context();
+  member_context();
+  freeall();
+  free_context();
 }
 
 void prooftest() {
@@ -1364,4 +1376,8 @@ void prooftest() {
   cprintf("should be empty\n\n");
   testall();
   cprintf("FINISHED tests\n\n");
+
+  cprintf("\n\nSTARTING FAILURES\n\n");
+  proof_check_expected_failures();
+  cprintf("FINISHED failures\n\n");
 }
