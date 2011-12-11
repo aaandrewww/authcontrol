@@ -13,7 +13,7 @@
 #include <kern/env.h>
 #include <kern/sched.h>
 #include <kern/picirq.h>
-#include <kern/prooftest.h>
+//#include <kern/prooftest.h>
 
 // Test the stack backtrace function (used in lab 1 only)
 void
@@ -60,7 +60,7 @@ i386_init(void)
 	// Lab 2 memory management initialization functions
 	mem_init();
 
-  prooftest();
+//  prooftest();
 
 	// Lab 2 interrupt and gate descriptor initialization functions
 	idt_init();

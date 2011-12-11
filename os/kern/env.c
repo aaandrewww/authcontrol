@@ -23,7 +23,25 @@ struct Env *env_free_list = NULL;	// Free list
 
 static uint8_t signedBuffer[4*PGSIZE];
 static Context signedStatements;
+static Heap signedStatementsHeap;
+static bool signedStatementsHeapInit = false;
 static uint8_t authBuffer[8*PGSIZE];
+
+void initSignedStatementsHeap() {
+  init_heap(&signedStatementsHeap, signedBuffer, 4*PGSIZE);
+  signedStatementsHeapInit = true;
+}
+
+void add_to_signed_context(Formula f) {
+  Heap *oldHeap = set_heap(&signedStatementsHeap);
+  if (!signedStatementsHeapInit) {
+      initSignedStatementsHeap();
+      signedStatements = context_alloc(1);
+  }
+  Formula sign = formula_signed(principal_pcpl(curenv->env_id), f);
+  push(signedStatements, sign);
+  set_heap(oldHeap);
+}
 
 bool
 check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {

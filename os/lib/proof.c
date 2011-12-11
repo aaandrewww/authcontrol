@@ -802,6 +802,9 @@ void proof_free(Proof p) {
 Proof signed_proof(Pcpl sayer, Formula f) {
   Principal p = principal_pcpl(sayer);
   Formula goal = formula_signed(p, f);
+  if((envid_t)sayer == thisenv->env_id)
+    sys_sign_formula(f);
+
   Proof proof = proof_signed(goal);
 
   formula_free(goal);

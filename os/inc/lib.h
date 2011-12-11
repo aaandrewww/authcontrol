@@ -73,6 +73,7 @@ ssize_t	sys_program_read(envid_t dst_env, void *pg,
 int sys_set_goal(Formula f);
 int sys_set_proof(Proof p);
 int sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap);
+int sys_sign_formula(Formula f);
 
 static __inline envid_t
 sys_exofork(void)

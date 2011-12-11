@@ -8,6 +8,9 @@
 extern struct Env *envs;		// All environments
 extern struct Env *curenv;		// Current environment
 
+
+void add_to_signed_context(Formula f);
+
 void	env_init(void);
 int	env_alloc(struct Env **e, envid_t parent_id);
 void	env_free(struct Env *e);

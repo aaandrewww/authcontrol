@@ -546,14 +546,7 @@ static int sys_set_proof(uintptr_t proof){
   return 0;
 }
 
-// Set the page fault upcall for 'envid' by modifying the corresponding struct
-// Env's 'env_pgfault_upcall' field.  When 'envid' causes a page fault, the
-// kernel will push a fault record onto the exception stack, then branch to
-// 'func'.
-//
-// Returns 0 on success, < 0 on error.  Errors are:
-//  -E_BAD_ENV if environment envid doesn't currently exist,
-//    or the caller doesn't have permission to change envid.
+
 static int
 sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap)
 {
@@ -564,6 +557,15 @@ sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap)
 
   env->confirms_upcall = func;
   env->confirms_heap = (Heap *)heap;
+  return 0;
+}
+
+static int
+sys_sign_formula(uintptr_t formula){
+  cprintf("Env %d signed ", curenv->env_id);
+  formula_print((Formula)formula);
+  cprintf("\n");
+  add_to_signed_context((Formula)formula);
   return 0;
 }
 
@@ -596,6 +598,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	case SYS_set_goal: return sys_set_goal(a1);
 	case SYS_set_proof: return sys_set_proof(a1);
 	case SYS_set_confirms_upcall: return sys_set_confirms_upcall(a1, a2, a3);
+	case SYS_sign_formula: return sys_sign_formula(a1);
 	default: return -E_INVAL;
 	}
 
