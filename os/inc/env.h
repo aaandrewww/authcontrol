@@ -8,6 +8,7 @@
 #include <inc/memlayout.h>
 #include <inc/proof.h>
 #include <inc/formula.h>
+#include <inc/mm.h>
 
 typedef int32_t envid_t;
 
@@ -65,6 +66,8 @@ struct Env {
 	Proof proof; // pointer to a proof to use to access other envs
 	Formula goal; // Goal another env needs to prove to access this env
 	              // if null this defaults to parent only
+	uintptr_t confirms_upcall; // "confirms" entry point for proof checking
+	Heap *confirms_heap; // heap for storing Formula to be checked by "confirms"
 };
 
 #endif // !JOS_INC_ENV_H

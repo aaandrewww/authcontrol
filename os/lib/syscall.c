@@ -155,3 +155,9 @@ sys_set_proof(Proof proof)
 {
   return syscall(SYS_set_proof, 0, (uintptr_t) proof, 0, 0, 0, 0);
 }
+
+int
+sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap)
+{
+  return syscall(SYS_set_confirms_upcall, 0, envid, func, heap, 0, 0);
+}

@@ -23,6 +23,7 @@ enum {
 	SYS_program_read,
 	SYS_set_goal,
 	SYS_set_proof,
+	SYS_set_confirms_upcall,
 	NSYSCALLS
 };
 

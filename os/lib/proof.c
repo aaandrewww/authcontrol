@@ -20,6 +20,21 @@ bool formula_goal_check(Formula formula, Formula goal, Proof pf) {
   return true;
 }
 
+bool check_confirms(Confirms_f f){
+  // If the principal has not been substituted we cannot check so return false
+  if(f.principal->type != PCPL)
+    return false;
+
+  envid_t envid = f.principal->prin.pcpl;
+  struct env;
+  int flag;
+  flag = envid2env(envid, env, false);
+  if(flag < 0)
+    return false;
+
+  return true;
+}
+
 // Check that Proof, pf, is a valid proof of Formula, f, given Context, c
 bool proof_check(Formula f, Proof pf, Context c) {
   Proof p1;
@@ -41,7 +56,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
   case CONFIRMS_R:
     if (f->type != CONFIRMS_F)
       goto invalid_proof;
-    return true; // TODO check confirms
+    return check_confirms(f->form.confirms_f);
   case TAUTO_R:
     if (f->type != SAYS_F)
       goto invalid_proof;

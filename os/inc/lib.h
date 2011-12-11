@@ -66,11 +66,13 @@ int	sys_env_set_trapframe(envid_t env, struct Trapframe *tf);
 int	sys_env_set_pgfault_upcall(envid_t env, void *upcall);
 int	sys_ipc_try_send(envid_t to_env, uint32_t value, void *pg, int perm);
 int	sys_ipc_recv(void *rcv_pg);
-int     sys_set_goal(Formula f);
-int     sys_set_proof(Proof p);
 int	sys_program_lookup(const char *name, size_t len);
 ssize_t	sys_program_read(envid_t dst_env, void *pg,
 			 int programid, size_t offset, size_t len);
+
+int sys_set_goal(Formula f);
+int sys_set_proof(Proof p);
+int sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap);
 
 static __inline envid_t
 sys_exofork(void)
