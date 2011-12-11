@@ -1,10 +1,11 @@
 \documentclass[10pt]{article}
+\paperheight = 14in
 
 %AMS-TeX packages
 \usepackage{amssymb,amsmath,amsthm,amssymb}
 \usepackage{pdflscape}
 %geometry (sets margin) and other useful packages
-\usepackage[margin=2in]{geometry}
+\usepackage[margin=4in]{geometry}
 \usepackage{graphicx,ctable,booktabs}
 \usepackage{verbatim}
 
@@ -47,7 +48,6 @@
 
 \begin{document}
 \pagestyle{empty}
-
 $ 
 \text{Principal } 1 == A \\ 
 \text{Principal } 2 == B \\ 
@@ -88,7 +88,8 @@ $
 \trfrac[\;spec]{\trfrac[\;init]{\rtcheck}{\says{1}{\abs{\pred{99}{1}}}} \quad 3 \quad\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}}}{\says{1}{\pred{100}{2}}} \\\\\\\\ 
 $ 
 \begin{landscape} 
- $\trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{1}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}{\says{1}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}}}{\says{1}{\abs{\imp{\says{2}{\pred{99}{v_{0}}}}{\pred{99}{v_{0}}}}}} \quad 3 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{2}{\pred{99}{3}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{99}{3}}}{\says{2}{\pred{99}{3}}}}{\says{2}{\pred{99}{3}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{2}{\pred{99}{3}}}{\pred{99}{3}}}}{\pred{99}{3}}}{\says{1}{\pred{99}{3}}}}{\says{1}{\pred{99}{3}}}$ 
+ $\trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4099}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}{\says{4099}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}}{\says{4099}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad 4102 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4097}{\pred{42}{4102}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4102}}}{\says{4097}{\pred{42}{4102}}}}{\says{4097}{\pred{42}{4102}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{4097}{\pred{42}{4102}}}{\pred{42}{4102}}}}{\pred{42}{4102}}}{\says{4099}{\pred{42}{4102}}}}{\says{4099}{\pred{42}{4102}}}
+$ 
  \end{landscape} 
  
  \end{document}

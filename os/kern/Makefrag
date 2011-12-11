@@ -86,7 +86,8 @@ KERN_BINFILES :=	user/idle \
 			user/initsh \
 			fs/bufcache \
 			user/prooftest \
-			user/authtest
+			user/authtest \
+			user/lemmings
 
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))

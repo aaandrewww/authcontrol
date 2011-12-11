@@ -14,6 +14,8 @@
 #define OK 99
 #define ALRIGHT 100
 
+static uint8_t heapBuffer[4*PGSIZE];
+
 void print_pred() {
   Principal pcpl = principal_pcpl(A);
   Formula pred = formula_pred(OK, pcpl);
@@ -901,7 +903,7 @@ void test_proof_check_assump() {
   Formula fpred = formula_pred(pred, prinA);
   Proof pf = proof_assump(fpred);
   bool b;
-  push(&c, fpred);
+  push(c, fpred);
 
 //  proof_print(pf);
 //  cprintf("\\\\\\\\ \n");
@@ -993,7 +995,7 @@ void test_proof_check_tauto() {
   Proof p1 = proof_assump(fpred);
   Proof p2 = proof_tauto(f1, p1);
   Context c = context_alloc(1);
-  push(&c, fpred);
+  push(c, fpred);
 
 //  proof_print(p2);
 //  cprintf("\\\\\\\\ \n");
@@ -1012,7 +1014,7 @@ void test_proof_check_tauto_bad() {
   Proof p1 = proof_assump(fpred);
   Proof p2 = proof_tauto(f1, p1);
   Context c = context_alloc(1);
-  push(&c, fpred);
+  push(c, fpred);
 
 //  proof_print(p2);
 //  cprintf("\\\\\\\\ \n");
@@ -1060,8 +1062,8 @@ void test_proof_check_impl() {
   Proof p2 = proof_assump(f1);
   Proof p3 = proof_impl(fpred2, p1, p2);
   Context c = context_alloc(10);
-  push(&c, f1);
-  push(&c, fpred1);
+  push(c, f1);
+  push(c, fpred1);
 
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
@@ -1129,7 +1131,7 @@ void test_proof_check_says_says() {
   Proof p2 = proof_tauto(Asays2, p_f1);
   Proof p3 = proof_says_says(Asays2, p1, p2);
   Context c = context_alloc(10);
-  push(&c,Asays1);
+  push(c,Asays1);
 
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
@@ -1154,7 +1156,7 @@ void test_proof_check_says_spec() {
   Proof p2 = proof_tauto(Asays2, p_f2);
   Proof p3 = proof_says_spec(Asays2, prinA->prin.pcpl, p1, p2);
   Context c = context_alloc(10);
-  push(&c, AsaysAbs1);
+  push(c, AsaysAbs1);
 
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
@@ -1177,7 +1179,7 @@ void test_proof_check_delegation() {
   Context c = context_alloc(10);
   Formula BsaysOKC = formula_says(prinB, OKC);
   Formula impl = formula_impl(BsaysOKC, OKC);
-  push(&c, impl);
+  push(c, impl);
   b = proof_check(AsaysOKC, delegation, c);
 
   if (b != 1)
@@ -1220,14 +1222,14 @@ Context create_context(){
   Formula f7 = formula_pred(OK, p7);
 
   Context c = context_alloc(4);
-  push(&c, f1);
-  push(&c, f2);
-  push(&c, f3);
-  push(&c, f4);
-  push(&c, f5);
-  push(&c, f6);
-  push(&c, f7);
-  push(&c, f1);
+  push(c, f1);
+  push(c, f2);
+  push(c, f3);
+  push(c, f4);
+  push(c, f5);
+  push(c, f6);
+  push(c, f7);
+  push(c, f1);
 
   return c;
 }
@@ -1270,61 +1272,93 @@ void printall() {
   cprintf("\\text{Predicate } 100 == ALRIGHT \\\\\\\\ \n");
   cprintf("\\text{PRINTING FORMULAE} \\\\\\\\ \n");
   print_pred();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   print_impl();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   print_signed();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   print_says();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   print_confirms();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   print_abs();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   cprintf("\\text{PRINTING CONTEXT} \\\\\\\\ \n");
   print_context();
+  freeall();
   cprintf(" \\\\\\\\ \n");
   cprintf("\\text{PRINTING PROOFS} \\\\\\\\ \n");
   print_signed_p();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_confirms_p();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_assump_p();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_tauto_p();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_weaken_impl_p();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_impl_p();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_says_confirms();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_says_signed();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_says_says();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   print_says_spec();
+  freeall();
   cprintf(" \\\\\\\\\\\\\\\\ \n");
   cprintf("$ \n");
+  freeall();
   cprintf("\\begin{landscape} \n $");
   print_delegation();
+  freeall();
   cprintf("$ \n \\end{landscape} \n ");
 }
 
 void testall(){
   test_principal_eq();
+  freeall();
   test_principal_cp();
+  freeall();
   test_principal_subst();
+  freeall();
   test_formula_eq();
+  freeall();
   test_formula_cp();
+  freeall();
   test_formula_subst();
+  freeall();
   test_proof_eq();
+  freeall();
   test_proof_check();
+  freeall();
   member_context();
+  freeall();
   free_context();
 }
 
 void umain(int argc, char **argv) {
+  Heap heap;
+  init_heap(&heap, &heapBuffer, 4*PGSIZE);
+  set_heap(&heap);
+
   printall();
   cprintf("\n\nSTARTING TESTS\n\n");
   cprintf("should be empty\n\n");

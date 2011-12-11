@@ -27,6 +27,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
   Formula pg1;
   Formula f1, f1_subst, f3, f4, impl;
   Pcpl pcpl;
+  bool b;
 
   // Check if the formula is the same as the proof goal
   if (!formula_goal_check(f, proof_goal(pf), pf))
@@ -51,7 +52,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
     // Check the proof with f1 added to the context
     if (!c)
       c = context_alloc(10);
-    push(&c, f->form.impl_f.formula2);
+    push(c, f->form.impl_f.formula2);
     return proof_check(f->form.impl_f.formula2, pf->r.weaken_impl_r.proof, c);
   case IMPL_R:
     p1 = pf->r.impl_r.pf1;
@@ -103,7 +104,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
     // Check the proof in the context with f1 added
     if (!c)
       c = context_alloc(10);
-    push(&c, pg1->form.confirms_f.formula);
+    push(c, pg1->form.confirms_f.formula);
     return proof_check(f, p2, c);
   case SAYS_SIGNED_R:
     if (f->type != SAYS_F)
@@ -127,7 +128,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
     // Check the proof in the context with f1 added
     if (!c)
       c = context_alloc(10);
-    push(&c, pg1->form.signed_f.formula);
+    push(c, pg1->form.signed_f.formula);
     return proof_check(f, p2, c);
   case SAYS_SAYS_R:
     if (f->type != SAYS_F)
@@ -151,7 +152,7 @@ bool proof_check(Formula f, Proof pf, Context c) {
     // Check the proof in the context with f1 added
     if (!c)
       c = context_alloc(10);
-    push(&c, pg1->form.says_f.formula);
+    push(c, pg1->form.says_f.formula);
     return proof_check(f, p2, c);
   case SAYS_SPEC_R:
     if (f->type != SAYS_F)
@@ -182,11 +183,19 @@ bool proof_check(Formula f, Proof pf, Context c) {
     f1_subst = formula_subst(f1, 0, pcpl);
     if (!c)
       c = context_alloc(10);
-    push(&c, f1);
+    push(c, f1_subst);
     return proof_check(f, p2, c);
 
   case ASSUMP_R:
-    return member(c, f);
+    b = member(c,f);
+    if(!b){
+      cprintf("Formula: \n");
+      formula_print(f);
+      cprintf("\n not in context:\n");
+      context_print(c);
+      cprintf("\n");
+    }
+    return b;
 
   default:
     cprintf("PROOF TYPE UNDEFINED IN CHECKER");

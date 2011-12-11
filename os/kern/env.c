@@ -21,14 +21,14 @@ struct Env *env_free_list = NULL;	// Free list
 
 #define ENVGENSHIFT	12		// >= LOGNENV
 
-static uint8_t authBuffer[PGSIZE];
+static uint8_t authBuffer[4*PGSIZE];
 
 bool
 check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {
 	if (proverEnv->proof == NULL) return false;
 
 	Heap authHeap;
-	init_heap(&authHeap, &authBuffer, PGSIZE);
+	init_heap(&authHeap, &authBuffer, 4*PGSIZE);
 	Heap *oldHeap = set_heap(&authHeap);
 
 	lcr3(PADDR(goalEnv->env_pgdir));

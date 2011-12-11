@@ -4,24 +4,19 @@
 #include <inc/string.h>
 
 // Push a new formula onto the Context stack.  Copies the formula.
-void push(Context *c, Formula f) {
+void push(Context c, Formula f) {
   // If the push will overflow the given context double the size
-  if ((*c)->topOfContext == (*c)->size) {
-    uint32_t newSize = (*c)->size * 2;
-    Context cNew = context_alloc(newSize);
-    if (!cNew) {
-      cprintf("ERROR: Context is full and we are out of memory. "
-          "Formula was not added\n");
-      return;
-    }
-    memcpy(cNew->contextData, (*c)->contextData, (*c)->size*sizeof(Formula));
-    cNew->size = newSize;
-    cNew->topOfContext = (*c)->topOfContext;
-    *c = cNew;
+  if (c->topOfContext == c->size) {
+    uint32_t newSize = c->size * 2;
+    Formula *f = (Formula *) malloc(newSize * sizeof(Formula));
+    memcpy(f, c->contextData, c->size*sizeof(Formula));
+    c->size = newSize;
+    free(c->contextData);
+    c->contextData = f;
   }
   Formula fCopy = formula_cp(f);
-  (*c)->contextData[(*c)->topOfContext] = fCopy;
-  (*c)->topOfContext++;
+  c->contextData[c->topOfContext] = fCopy;
+  c->topOfContext++;
 }
 
 Formula pop(Context c) {
