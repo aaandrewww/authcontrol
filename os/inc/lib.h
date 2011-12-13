@@ -74,6 +74,7 @@ int sys_set_goal(Formula f);
 int sys_set_proof(Proof p);
 int sys_set_confirms_upcall(envid_t envid, uintptr_t func, uintptr_t heap);
 int sys_sign_formula(Formula f);
+int sys_proof_test(envid_t envid);
 
 static __inline envid_t
 sys_exofork(void)
@@ -93,6 +94,8 @@ envid_t	dumbfork(void);
 // ipc.c
 void	ipc_send(envid_t to_env, uint32_t value, void *pg, int perm);
 int32_t ipc_recv(envid_t *from_env_store, void *pg, int *perm_store);
+Proof receive_proof();
+void send_proof(envid_t to, Proof p);
 
 // fork.c
 #define	PTE_SHARE	0x400

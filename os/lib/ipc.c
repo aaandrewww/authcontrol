@@ -1,6 +1,34 @@
 // User-level IPC library routines
 
 #include <inc/lib.h>
+#include <inc/proof.h>
+#include <inc/mm.h>
+
+// Receive a proof using ipc
+Proof receive_proof() {
+  size_t offset = (size_t) ipc_recv(NULL, UTEMP, NULL);
+  Proof p = proof_cp((Proof)((uint8_t *)UTEMP + offset));
+  sys_page_unmap(0, UTEMP);
+  return p;
+}
+
+// Send a proof over IPC
+void send_proof(envid_t to, Proof p) {
+  // Copy the proof to UTEMP
+  sys_page_alloc(0, UTEMP, PTE_U | PTE_W);
+  Heap tempHeap;
+  init_heap(&tempHeap, UTEMP, PGSIZE);
+  Heap *oldHeap = set_heap(&tempHeap);
+  Proof copy = proof_cp(p);
+  size_t offset = (uintptr_t)copy - (uintptr_t)UTEMP;
+
+  // Send the proof
+  ipc_send(to, offset, UTEMP, PTE_U);
+  sys_page_unmap(0, UTEMP);
+
+  // Reset the heap
+  set_heap(oldHeap);
+}
 
 // Receive a value via IPC and return it.
 // If 'pg' is nonnull, then any page sent by the sender will be mapped at

@@ -566,6 +566,13 @@ sys_sign_formula(uintptr_t formula){
   return 0;
 }
 
+static int
+sys_proof_test(envid_t envid){
+  struct Env *env;
+  envid2env(envid, &env, true);
+  return 0;
+}
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
@@ -596,6 +603,7 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 	case SYS_set_proof: return sys_set_proof(a1);
 	case SYS_set_confirms_upcall: return sys_set_confirms_upcall(a1, a2, a3);
 	case SYS_sign_formula: return sys_sign_formula(a1);
+	case SYS_proof_test: return sys_proof_test(a1);
 	default: return -E_INVAL;
 	}
 

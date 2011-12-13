@@ -167,3 +167,10 @@ sys_sign_formula(Formula f)
 {
   return syscall(SYS_sign_formula, 0, (uintptr_t) f, 0, 0, 0, 0);
 }
+
+int
+sys_proof_test(envid_t envid)
+{
+  return syscall(SYS_proof_test, 0, envid, 0, 0, 0, 0);
+}
+

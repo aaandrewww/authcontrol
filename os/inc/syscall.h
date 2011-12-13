@@ -25,6 +25,7 @@ enum {
 	SYS_set_proof,
 	SYS_set_confirms_upcall,
 	SYS_sign_formula,
+	SYS_proof_test,
 	NSYSCALLS
 };
 

@@ -12,6 +12,9 @@
 #include <kern/kclock.h>
 #include <kern/picirq.h>
 
+static uint32_t totalTime = 0;
+static size_t count = 0;
+
 // Global descriptor table.
 //
 // The kernel and user segments are identical except for the DPL.
@@ -360,7 +363,15 @@ trap_syscall(struct Trapframe *tf)
 	uint32_t a4 = regs[0];	   // %edi
 	uint32_t a5 = regs[1];	   // %esi
 	// Call syscall and store the result in %eax
+//	uint32_t x = read_tsc();
 	regs[7] = syscall(callno, a1, a2, a3, a4, a5);
+//	x = read_tsc() - x;
+//	if(callno == 3){
+//	  totalTime += x;
+//	  count ++;
+//	  if((count % 1500)  == 0 && count != 0)
+//	    cprintf("count %u, syscall #%u, avg %u, total %llllu\n", count, callno, totalTime/count, totalTime);
+//	}
 }
 
 
