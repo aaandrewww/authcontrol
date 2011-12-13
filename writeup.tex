@@ -53,7 +53,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \newcommand{\sign}[2]{\ensuremath{#1\;\textsf{signed}\;#2}}
 \newcommand{\imp}[2]{\ensuremath{#1 \rightarrow #2}}
 \newcommand{\says}[2]{\ensuremath{#1\;\textsf{says}\;#2}}
-\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{con}\;#2}}
+\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{confirms}\;#2}}
 \newcommand{\ctxt}[0]{\ensuremath{\Gamma}}
 \newcommand{\nil}[0]{\ensuremath{\cdot}}
 \newcommand{\bnfsep}[0]{\ensuremath{\quad\mid\quad}}
@@ -63,6 +63,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \newcommand{\abs}[1]{\ensuremath{\forall x:\;#1}}
 \newcommand{\rtcheck}[0]{\ensuremath{\textsf{Runtime check}}}
 \newcommand{\with}[1]{\ensuremath{\;(\text{with } #1)}}
+\newcommand{\todo}[1]{{\color{red}todo: {#1}}}
 
 \begin{document}
 
@@ -79,46 +80,63 @@ Authorization logics are a principled technique for implementing rule-based acce
 They have several advantages over traditional OS access control mechanisms such as access control lists.
 In particular, they allow principals to express access control decisions for which they do not have complete information.
 Authorization logics also provide \emph{proof-carrying authorization}. That is, the capability to access a resource carries with it the set of authorization decisions that granted it.
-
-We're excited about this project because it combines 1) PL stuff, 2) crypto, and 3) some cool concepts from OS like secure bindings.
+\todo{more introduction}
 
 \subsection{Related work}
-There has been quite a lot of work on authorization logics, particular in the context of distributed systems.
+\todo{more information and reword some}
+There has been quite a lot of work on authorization logics, particularly in the context of distributed systems.
 Most recently, \citet{Nexus} developed the Nexus operating system, which uses authorization logic to combine different trust bases for secure systems into a cohesive authorization system.
-We plan to incorporate Nexus's method for handling the effect of dynamic state on authorization.
+Our system borrows Nexus's authority mechanism to allow revocation and other dynamic authorization policies.
 
-We plan to base our authorization logic on the \citet{Bauer}'s simple authorization logic.
+Our authorization logic is based on \citet{Bauer}'s authorization logic extended with a primitive for dynamic authorization checks and cut elimination, which reduces the size of proofs.
 More sophisticated authorization logics are given by \citet{AURA} and \citet{Garg}.
+
+\todo{relationship to capabilities}
 \end{section}
 
 \begin{section}{Design}
 
+We replaced the current authorization mechanism for jOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a secure binding to specify an authorization goal which is used to mediate access to system calls affecting the environment.
+An authorization goal is a formula in our authorization logic. Access is granted to any principal presenting a proof of the authorization goal.
+
+
+Our logic is based on the logic given in \citep{Bauer}, but is similar to the Nexus Authorization Logic (NAL). Like NAL, our logic is constructive, and thus a proof of authorization is also an audit record of the principals and inferences
+
+Our new system uses authorization proofs as capabilities and allows principals 
+
+
+\todo{rework}
 We plan to replace the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on a simple authorization logic.
 Our authorization system will use authorization proofs as capabilities and support dynamic authorization decisions through secure bindings.
 Because our authorization library will be implemented primarily in user space, it also provides a mechanism for implementing access control for user level resources.
 
-\subsection{Principals}
-
-The principals in our system will be environments, \emph{$env_1 \ldots env_n$}, and a special \emph{kernel} environment.
+The principals in our system are environments, \emph{$env_1 \ldots env_n$}.
 We believe these are appropriate principals because our authorization decisions apply to system calls, primarily those for manipulating environments.
 
-\subsection{Authorization logic}\label{sec:logic}
-
-We plan to base our logic on the simple logic for access control given in \cite{Bauer}, but extend it to support dynamic authorization decisions. The syntax and semantics of the logic are given below and followed with a high level description.
+Our logic is based on the simple logic for access control given in \cite{Bauer}, but extended to support dynamic authorization decisions. The syntax and semantics of the logic are given below and followed with a high level description.
 \\[1em]
 \begin{tabular}{llcl}
-\emph{formulas} & F & ::= & P \bnfsep \imp{F_1}{F_2} \bnfsep \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F} \\
-\emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,F \\
+\emph{principals} & R & ::= & $x$ \bnfsep $v$ \\
+\emph{predicates} & P & ::= & $pred(R)$ \\
+\emph{formulas} & F & ::= & $P$ \bnfsep \imp{F_1}{F_2} \bnfsep \abs{F}\\
+                &   & \bnfsep & \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F}\\
+\emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,$F$ \\
 \end{tabular}
 {
 \center
-$\trfrac[\;init]{}{\entails{\ctxt,F}{F}}$ \hfill
-$\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfill
-$\trfrac[\;weaken]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfill
-$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}{\entails{\ctxt,\imp{F_1}{F_2}}{F_3}}$ \\[1em]
-$\trfrac[\;sign]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}$ \hfill
-$\trfrac[\;conf]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}$ \hfill
-$\trfrac[\;say]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}$
+$\trfrac[\;signed]{\rtcheck}{\entails{\ctxt}{\sign{A}{F}}}$ \hfil
+$\trfrac[\;confirms]{\rtcheck}{\entails{\ctxt}{\confirms{A}{F}}}$ \hfil
+$\trfrac[\;assump]{F \in \ctxt}{\entails{\ctxt}{F}}$ \\[1em]
+
+$\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfil
+$\trfrac[\;weaken impl]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfil
+$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt}{\imp{F_1}{F_2}}}{\entails{\ctxt}{F_2}}$ \\[1em]
+
+$\trfrac[\;sign]{\entails{\ctxt}{\sign{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;conf]{\entails{\ctxt}{\confirms{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \\[1em]
+
+$\trfrac[\;says]{\entails{\ctxt}{\says{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;spec]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
 }
 
 \medskip
@@ -161,12 +179,12 @@ The context was implemented as a stack of formulas since the proof checker adds 
 \end{section}
 
 \begin{section}{Example: Delegation}
-Suppose an environment wishes to accept as ``OK" whatever another environment accepts as ``OK".  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
+Suppose an environment wishes to accept as ``OK'' whatever another environment accepts as ``OK''.  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
 $C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.
 \newline\newline
 $
-P_1 = \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \\\\\\\\
-P_2 = \trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\\
+P_1 = \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;assump]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \\\\\\\\
+P_2 = \trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;tauto]{\trfrac[\;assump]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;assump]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\\
 \text{DELEGATION} = \trfrac[\;spec]{P_1 \quad C_1 \quad P_2}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\
 $
 We have added helper functions to create these proofs.
@@ -181,10 +199,11 @@ Proof  perm = says_from_signed(P, pred);
 // Constructed in C2
 Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
 \end{lstlisting}
-$P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed" to verify the signatures, and by ``init" to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
+$P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed'' to verify the signatures, and by ``assump'' to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
 \end{section}
 
 \begin{section}{Future Work}
+Kernel principal.
 \end{section}
 
 \begin{section}{Summary}
