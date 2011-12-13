@@ -85,10 +85,17 @@ $
 \trfrac[\;conf]{\trfrac[\;confirms]{\rtcheck}{\pred{100}{2}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
 \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\pred{100}{2}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
 \trfrac[\;says]{\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
-\trfrac[\;spec]{\trfrac[\;init]{\rtcheck}{\says{1}{\abs{\pred{99}{1}}}} \quad 3 \quad\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}}}{\says{1}{\pred{100}{2}}} \\\\\\\\ 
+\trfrac[\;spec]{\trfrac[\;init]{\rtcheck}{\says{1}{\abs{\pred{99}{1}}}} \quad 3 \quad\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}}}{\says{1}{\pred{100}{2}}} \\\\\\\\
+\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\pred{42}{4097}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}} \\\\
+ERROR: formula does not match goal  \\
+Formula: \\
+\says{4097}{\pred{42}{4097}} \\
+Proof: \\
+\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\pred{42}{4097}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}}
 $ 
 \begin{landscape} 
- $\trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4099}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}{\says{4099}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}}{\says{4099}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad 4102 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4097}{\pred{42}{4102}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4102}}}{\says{4097}{\pred{42}{4102}}}}{\says{4097}{\pred{42}{4102}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{4097}{\pred{42}{4102}}}{\pred{42}{4102}}}}{\pred{42}{4102}}}{\says{4099}{\pred{42}{4102}}}}{\says{4099}{\pred{42}{4102}}}
+ $
+ \trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}{\says{4098}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}}{\says{4098}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad 4097 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\pred{42}{4097}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{4097}{\pred{42}{4097}}}{\pred{42}{4097}}}}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}}
 $ 
  \end{landscape} 
  

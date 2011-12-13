@@ -54,5 +54,31 @@ void umain(int argc, char **argv) {
     Proof auth = receive_proof();
     sys_set_proof(auth);
     sys_proof_test(other_child);
+
+    // second child
+    if (whos[0] != 0) {
+      if (sys_page_alloc(0, UTEMP, PTE_U | PTE_W | PTE_P) < 0)
+        cprintf("ERROR allocating");
+
+      uint8_t *test = (uint8_t *) UTEMP;
+      int i;
+      for (i = 0; i < PGSIZE; i++) {
+        test[i] = i;
+      }
+      cprintf("in env %u, mapping to %u\n", thisenv->env_id, other_child);
+      sys_page_map(0, UTEMP, other_child, UTEMP, PTE_U | PTE_W | PTE_P);
+      ipc_send(other_child, 0, 0, 0);
+    }
+
+    // second child
+
+    if (whos[0] == 0) {
+      ipc_recv(0,0,0);
+      uint8_t *test = (uint8_t *) UTEMP;
+      for (i = 0; i < PGSIZE; i++) {
+        cprintf("%u ", test[i]);
+      }
+    }
+
   }
 }
