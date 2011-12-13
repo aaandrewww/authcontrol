@@ -1,0 +1,188 @@
+\documentclass[10pt]{article}
+
+%AMS-TeX packages
+\usepackage{amssymb,amsmath,amsthm} 
+%geometry (sets margin) and other useful packages
+\usepackage[margin=1.25in]{geometry}
+\usepackage{graphicx,ctable,booktabs}
+\usepackage{verbatim}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=C,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
+
+%
+%Fancy-header package to modify header/page numbering 
+%
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+%\addtolength{\headwidth}{\marginparsep} %these change header-rule width
+%\addtolength{\headwidth}{\marginparwidth}
+\lhead{CS 261 Project Proposal}
+\chead{} 
+\rhead{\thepage} 
+\lfoot{\small Andrew Johnson and Scott Moore} 
+\cfoot{} 
+\rfoot{\footnotesize CS 261 Project Proposal} 
+\renewcommand{\headrulewidth}{.3pt} 
+\renewcommand{\footrulewidth}{.3pt}
+\setlength\voffset{-0.25in}
+\setlength\textheight{648pt}
+
+\usepackage[square,numbers]{natbib}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{trfrac}
+\newcommand{\sign}[2]{\ensuremath{#1\;\textsf{signed}\;#2}}
+\newcommand{\imp}[2]{\ensuremath{#1 \rightarrow #2}}
+\newcommand{\says}[2]{\ensuremath{#1\;\textsf{says}\;#2}}
+\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{con}\;#2}}
+\newcommand{\ctxt}[0]{\ensuremath{\Gamma}}
+\newcommand{\nil}[0]{\ensuremath{\cdot}}
+\newcommand{\bnfsep}[0]{\ensuremath{\quad\mid\quad}}
+\newcommand{\entails}[2]{\ensuremath{#1 \vdash #2}}
+\newcommand{\pred}[2]{\ensuremath{\textsc{#1}(#2)}}
+\newcommand{\subst}[2]{\ensuremath{[#1/#2]}}
+\newcommand{\abs}[1]{\ensuremath{\forall x:\;#1}}
+\newcommand{\rtcheck}[0]{\ensuremath{\textsf{Runtime check}}}
+\newcommand{\with}[1]{\ensuremath{\;(\text{with } #1)}}
+
+\begin{document}
+
+\title{CS 261: Project Proposal}
+\author{Andrew Johnson and Scott Moore}
+\date{November 15, 2011}
+
+\maketitle
+
+\thispagestyle{empty}
+
+\begin{section}{Introduction}
+Authorization logics are a principled technique for implementing rule-based access control mechanisms.
+They have several advantages over traditional OS access control mechanisms such as access control lists.
+In particular, they allow principals to express access control decisions for which they do not have complete information.
+Authorization logics also provide \emph{proof-carrying authorization}. That is, the capability to access a resource carries with it the set of authorization decisions that granted it.
+And other stuff too\ldots Since we chose our project late, we didn't spend much time on this section in favor of trying to describe our design/plan in more detail.
+
+We're excited about this project because it combines 1) PL stuff, 2) crypto, and 3) some cool concepts from OS like secure bindings.
+
+\subsection{Related work}
+There has been quite a lot of work on authorization logics, particular in the context of distributed systems.
+Most recently, \citet{Nexus} developed the Nexus operating system, which uses authorization logic to combine different trust bases for secure systems into a cohesive authorization system.
+We plan to incorporate Nexus's method for handling the effect of dynamic state on authorization.
+
+We plan to base our authorization logic on the \citet{Bauer}'s simple authorization logic.
+More sophisticated authorization logics are given by \citet{AURA} and \citet{Garg}.
+\end{section}
+
+\begin{section}{Design}
+
+We plan to replace the current authorization mechanism for jOS system calls (\textsf{envid2env}) with a new mechanism based on a simple authorization logic.
+Our authorization system will use authorization proofs as capabilities and support dynamic authorization decisions through secure bindings.
+Because our authorization library will be implemented primarily in user space, it also provides a mechanism for implementing access control for user level resources.
+
+\subsection{Principals}
+
+The principals in our system will be environments, \emph{$env_1 \ldots env_n$}, and a special \emph{kernel} environment.
+We believe these are appropriate principals because our authorization decisions apply to system calls, primarily those for manipulating environments.
+
+\subsection{Authorization logic}
+
+We plan to base our logic on the simple logic for access control given in \cite{Bauer}, but extend it to support dynamic authorization decisions. The syntax and semantics of the logic are given below and followed with a high level description.
+\\[1em]
+\begin{tabular}{llcl}
+\emph{formulas} & F & ::= & P \bnfsep \imp{F_1}{F_2} \bnfsep \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F} \\
+\emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,F \\
+\end{tabular}
+{
+\center
+$\trfrac[\;init]{}{\entails{\ctxt,F}{F}}$ \hfill
+$\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfill
+$\trfrac[\;weaken]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfill
+$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt,F_2}{F_3}}{\entails{\ctxt,\imp{F_1}{F_2}}{F_3}}$ \\[1em]
+$\trfrac[\;sign]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\sign{A}{F_1}}{\says{A}{F_2}}}$ \hfill
+$\trfrac[\;conf]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\confirms{A}{F_1}}{\says{A}{F_2}}}$ \hfill
+$\trfrac[\;say]{\entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt,\says{A}{F_1}}{\says{A}{F_2}}}$
+}
+
+\medskip
+
+The meta variable $A$ in the formulas \textsf{signed}, \textsf{says} and \textsf{confirms} ranges over principals.
+$P$ would denotes uninterpreted first-order predicates (e.g., \pred{Trusted}{Env}, \pred{Parent}{Env}).
+The formula \imp{F_1}{F_2} denotes implication. 
+
+\sign{A}{F} indicates that $A$ believes $F$ to be true; at run time, it corresponds to a digitally signed assertion.
+\says{A}{F} denotes that $F$ is a statement which $A$ believes given the formulae asserted by A and the beliefs of other principals.
+
+\paragraph{Example} Suppose that principal $A$ wishes to delegate its authorization decisions to $B$. Then $A$ would assert \sign{A}{\imp{(\says{B}{\pred{OK}{Env}})}{\pred{OK}{Env}}}. Now for any principal $C$ authorized by $B$ (\says{B}{\pred{OK}{C}}), we can derive \says{A}{\pred{OK}{C}}.
+
+\medskip
+
+\confirms{A}{F} is a new formula we are adding to the logic and corresponds with the authority abstraction in the Nexus system \cite{Nexus}. 
+\confirms{A}{F} is a \emph{secure binding} of a run time authorization decision to a principal. \confirms{A}{F} is validated by invoking a decision procedure in $A$ that takes the authorization formula $F$ as input and returns true if $A$ believes $F$.
+Crucially, checking the validity $\confirms{A}{F}$ does not create a reusable proof object.
+This allows time-sensitive or revocable authorization decisions to be implemented on top of our simple logic without explicitly incorporating time or revocation as primitives.
+\end{section}
+
+\begin{section}{Implementation}
+
+\subsection{Logic Definition and Implementation}
+\subsubsection{COQ}
+\subsubsection{C Library}
+\subsection{jOS Integration}
+\subsubsection{Library Functions}
+\subsubsection{System Calls}
+\subsubsection{Proof Sharing}
+
+\end{section}
+
+\begin{section}{Evaluation}
+\subsection{Performance}
+\subsection{Usability}
+\end{section}
+
+\begin{section}{Example: Delegation}
+Suppose an environment wishes to accept as ``OK" whatever another environment accepts as ``OK".  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
+$C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.
+\newline\newline
+$
+P_1 = \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \\\\\\\\
+P_2 = \trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\\
+\text{DELEGATION} = \trfrac[\;spec]{P_1 \quad C_1 \quad P_2}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\
+$
+We have added helper functions to create these proofs.
+\begin{lstlisting}
+// Constructed in C2
+Proof del = delegate_from_signed(C2, P, OK);  
+
+// Constructed in parent
+Formula pred = formula_pred(OK, principal_pcpl(C1));
+Proof  perm = says_from_signed(P, pred);
+
+// Constructed in C2
+Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
+\end{lstlisting}
+$P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed" to verify the signatures, and by ``init" to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
+\end{section}
+
+\bibliographystyle{plainnat}
+\bibliography{bib}
+
+\end{document}
