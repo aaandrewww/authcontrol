@@ -161,23 +161,66 @@ This allows time-sensitive or revocable authorization decisions to be implemente
 \begin{section}{Implementation}
 We broke implementation into three stages.  We first embedded our logic into the Coq Proof Assistant.  Second, we ported that code to C as a stand-alone library.  Third, we integrated the library into the JOS operating system.
 \subsection{Coq}
-In order to ensure the correctness and completeness of our logic and proof checker, we first embedded it into the Coq Proof Assistant.  This enabled us to prove that our proof checker was correct and always terminated, as well as work out some of the implementation details in a strongly typed language.  For example, we first defined variables as strings and carried an environment mapping names to values.  This made the proof checker overly complicated and stripping it out led to a far simpler implementation both in Coq and C.  Writing the proof checker in Coq allowed us to prove that it was correct (in fact, using Coq's dependent types, we actually return the Coq proof that the proof checker is correct from the check function).  We therefore can be assured that we did not skip any corner cases, or over-simplify.
-\subsection{C Library}
+In order to ensure the correctness and completeness of our logic and proof checker, we first embedded it into the Coq Proof Assistant.  This enabled us to prove that our proof checker was correct and always terminated, as well as work out some of the implementation details in a strongly typed language.  For example, we first defined variables as strings and carried an environment mapping names to values.  This made the proof checker overly complicated and stripping it out led to a far simpler implementation both in Coq and C.  Writing the proof checker in Coq allowed us to prove that it was correct (in fact, using Coq's dependent types, we actually return the Coq proof that the proof checker is correct from the check function).  We therefore can be assured that we did not skip any corner cases, or over-simplify.  The logic, proof checker, and examples were implemented in about 400 lines in Coq.
+\subsection{C Library} \label{sec:clib}
 There is no way to directly compile Coq code into C code, so we performed this translation by hand.  This obviously invalidates our proof of correctness.  We gained the fact that our algorithms and data structures were correct, but have no such guarantee for the C implementation.  We attempted to compensate for this by writing a number of tests (now in \textsf{user/proof test.c}).  The C library defines the logic as in section \ref{sec:logic}.  For ease of use we also implemented functions to recursively print formulas and proofs, as well as constructors for primitive proofs, primitive formulas, principals, and for more complex, commonly used, proofs.  
 \newline\newline
-The context was implemented as a stack of formulas since the proof checker adds a formula to the context and, once it has been used, removes that formula.  Formulas and Proofs are represented as tagged \textsf{union}s of the primitive types together with an \textsf{enum} indicating the current type.  To simplify memory management all constructors perform a deep copy of all input data structures.
+The context was implemented as a stack of formulas since the proof checker adds a formula to the context and, once it has been used, removes that formula.  Formulas and Proofs are represented as tagged \textsf{union}s of the primitive types together with an \textsf{enum} indicating the current type (another option would be to use C++ subclassing).  To simplify memory management, all constructors perform a deep copy of all input data structures.  This means that a proof can be freed without worry about the constituent subproofs and formulas.  To make this approach easy to implement, each of the data structures has a comparison function and a deep-copy function.  In addition, to ease debugging and introspection, each data structure can be printed as a pre-formatted latex string (many examples of which are in this document).  In total, the library implementation consists of approximately 2600 lines of C, about half of which is test code.
 \subsection{JOS Integration}
-\subsubsection{Library Functions}
+The library described in section \ref{sec:clib} provides a logic and a method to check proofs defined in that logic.  In order to use this for authorization we needed to integrate it into an operating system.  We chose to use JOS for simplicity; the existing authorization mechanism was easy to replace.  We chose to focus on replacing environment to environment authentication.  In JOS, an environment is authorized to manipulate another only if it is the direct parent environment. We replace this with a more flexible model built on our authorization logic.  Essentially, to manipulate environment A, environment B must provide a proof of a logical formula defined by A.  The modular design of our C library enables us to more or less drop it into JOS as a library.  In order to facilitate this we essentially only needed to implement a JOS memory manager (\textsf{malloc} and \textsf{free}) to replace the \textsf{stdlib} version.
+\subsubsection{Environments}
+Each environment has the option to define a single logical formula and add a pointer to it to their environment structure.  If environment A defines a formula
+\[
+F = \says{A}{\pred{OK}{x}}
+\]
+then $F$ must be proved in order to manipulate $A$.  If environment $B$ has a proof of $F$ then $B$ adds a pointer to this proof in their environment structure before making a system call that would affect environment $A$.  More details on this are presented in the next section.
 \subsubsection{System Calls}
-\subsubsection{Proof Sharing}
+If a system call, say \textsf{sys\_page\_map}, will affect a environment $A$ then, when $B$ makes that call, the JOS kernel uses the proof, $P$, that $B$ put into their environment structure and checks that $P$ is a valid proof of the formula, $F$, that $A$ has indicated.  Setting $F$ in $A$ and setting $P$ in $B$ are both accomplished using system calls.  We also add a system call for signing formulas, rather than implementing cryptographic digital signatures.  The kernel stores a list of all signed formulas and checks this list when checking a proof.  See below for a simple example.
+\begin{lstlisting}
+// Constructed in A
 
+// This is equivalent to [for all x, OK(x)]
+// What will actually be proved is [A says OK(B)] where B has been substituted for x
+Formula F = formula_pred(OK, x);
+sys_set_goal(F);
+// Sign formula [B is OK] (this is F with B substituted for x)
+sys_sign_formula(formula_subst(F, x, B));
+
+// Constructed in B
+
+// Construct a proof of [A says F(B)]
+Formula F_B_subst = formula_pred(OK, B);
+Proof P  = says_from_signed(A, F_B_subst);
+sys_set_proof(P);
+...
+// Map a page from B to A
+sys_page_map(0, Bvaddr, A, Avaddr, perm);
+\end{lstlisting}
+\subsubsection{Runtime Verification}
+During proof checking there are three runtime checks, context membership, signatures, confirmations.  The first is straightforward and the second is implemented as a special case of the first.  The third, confirmation, relies on code that is defined by the confirming environment.  my making a system call \textsf{sys\_set\_confirms\_upcall} the confirming environment, $A$, can set a function that should be called to check any statement of the form $\confirms{A}{F}$.  At runtime a candidate function is passed into the upcall, which returns a boolean value.  In our implementation we run this code in the proof checker, assuming it is well behaved (terminates, does not abuse privilege).  A future implementation could restrict upcalls to well-behaved functions and check this property at runtime.
+\subsubsection{Proof Sharing}
+It can be easier to construct a proof or parts of a proof in the environment which defines the goal to be proved.  In these cases the proofs need to be handed out to the provers.  To do this we created library functions to send and receive proofs.  These are implemented on top of IPC, adding handling of dynamically allocated data structures.  We can achieve the same result as above using proof sharing.
+\begin{lstlisting}
+// Constructed in A
+Formula F = formula_pred(OK, x);
+sys_set_goal(F);
+// This automatically calls sys_sign_formula when called from A
+Proof P  = says_from_signed(A, formula_subst(F, x, B));
+send_proof(B, P);
+
+// Constructed in B
+Proof P = receive_proof();
+sys_set_proof(P);
+...
+// Map a page from B to A
+sys_page_map(0, Bvaddr, A, Avaddr, perm);
+\end{lstlisting}
 \end{section}
 
 \begin{section}{Evaluation}
 \subsection{Performance}
 \subsection{Usability}
 \end{section}
-
 \begin{section}{Example: Delegation}
 Suppose an environment wishes to accept as ``OK'' whatever another environment accepts as ``OK''.  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
 $C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.
@@ -206,6 +249,7 @@ $P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constr
 Kernel principal.
 \end{section}
 
+Multiple goals for a single environment.
 \begin{section}{Summary}
 \end{section}
 
