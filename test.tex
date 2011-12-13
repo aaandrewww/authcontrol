@@ -1,21 +1,40 @@
 \documentclass[10pt]{article}
-\paperheight = 14in
 
 %AMS-TeX packages
 \usepackage{amssymb,amsmath,amsthm,amssymb}
 \usepackage{pdflscape}
-%geometry (sets margin) and other useful packages
-\usepackage[margin=4in]{geometry}
+%geometry (sets marginit) and other useful packages
+\usepackage[margin=0.5in]{geometry}
 \usepackage{graphicx,ctable,booktabs}
 \usepackage{verbatim}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=C,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
 
 %
-%Fancy-header package to modify header/page numbering 
+%Fancy-header package to modify header/page numberinitg 
 %
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-%\addtolength{\headwidth}{\marginparsep} %these change header-rule width
-%\addtolength{\headwidth}{\marginparwidth}
+%\addtolength{\headwidth}{\marginitparsep} %these change header-rule width
+%\addtolength{\headwidth}{\marginitparwidth}
 \lhead{CS 261 Project Proposal}
 \chead{} 
 \rhead{\thepage} 
@@ -35,7 +54,7 @@
 \newcommand{\sign}[2]{\ensuremath{#1\;\textsf{signed}\;#2}}
 \newcommand{\imp}[2]{\ensuremath{#1 \rightarrow #2}}
 \newcommand{\says}[2]{\ensuremath{#1\;\textsf{says}\;#2}}
-\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{confirms}\;#2}}
+\newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{con}\;#2}}
 \newcommand{\ctxt}[0]{\ensuremath{\Gamma}}
 \newcommand{\nil}[0]{\ensuremath{\cdot}}
 \newcommand{\bnfsep}[0]{\ensuremath{\quad\mid\quad}}
@@ -47,15 +66,14 @@
 \newcommand{\with}[1]{\ensuremath{\;(\text{with } #1)}}
 
 \begin{document}
-\pagestyle{empty}
 $ 
-\text{Principal } 1 == A \\ 
-\text{Principal } 2 == B \\ 
-\text{Principal } 3 == C \\ 
-\text{Principal } 4 == D \\ 
-\text{Principal } 5 == E \\ 
-\text{Principal } 6 == F \\ 
-\text{Principal } 7 == G \\ 
+\text{Prinitcipal } 1 == A \\ 
+\text{Prinitcipal } 2 == B \\ 
+\text{Prinitcipal } 3 == C \\ 
+\text{Prinitcipal } 4 == D \\ 
+\text{Prinitcipal } 5 == E \\ 
+\text{Prinitcipal } 6 == F \\ 
+\text{Prinitcipal } 7 == G \\ 
 \text{Predicate } 99 == OK \\ 
 \text{Predicate } 100 == ALRIGHT \\\\
 \text{PRINTING FORMULAE} \\\\ 
@@ -85,18 +103,28 @@ $
 \trfrac[\;conf]{\trfrac[\;confirms]{\rtcheck}{\pred{100}{2}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
 \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\pred{100}{2}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
 \trfrac[\;says]{\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}} \quad \trfrac[\;init]{\rtcheck}{\says{1}{\pred{99}{1}}}}{\says{1}{\pred{99}{1}}} \\\\\\\\ 
-\trfrac[\;spec]{\trfrac[\;init]{\rtcheck}{\says{1}{\abs{\pred{99}{1}}}} \quad 3 \quad\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}}}{\says{1}{\pred{100}{2}}} \\\\\\\\
-\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\pred{42}{4097}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}} \\\\
-ERROR: formula does not match goal  \\
-Formula: \\
-\says{4097}{\pred{42}{4097}} \\
-Proof: \\
-\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\pred{42}{4097}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}}
+\trfrac[\;spec]{\trfrac[\;init]{\rtcheck}{\says{1}{\abs{\pred{99}{1}}}} \quad 3 \quad\trfrac[\;init]{\rtcheck}{\says{1}{\pred{100}{2}}}}{\says{1}{\pred{100}{2}}} \\\
 $ 
-\begin{landscape} 
- $
- \trfrac[\;spec]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}{\says{4098}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}}}{\says{4098}{\abs{\imp{\says{4097}{\pred{42}{v_{0}}}}{\pred{42}{v_{0}}}}}} \quad 4097 \quad\trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{4098}{\pred{42}{4097}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{4097}{\pred{42}{4097}}}{\pred{42}{4097}}}}{\pred{42}{4097}}}{\says{4098}{\pred{42}{4097}}}}{\says{4098}{\pred{42}{4097}}}
-$ 
- \end{landscape} 
- 
+\pagebreak
+\newline\newline
+\newline\newline
+$C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.\newline\newline
+$
+P_1 = \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \\\\\\\\
+P_2 = \trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;init]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\\
+\text{DELEGATION} = \trfrac[\;spec]{P_1 \quad C_1 \quad P_2}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\
+$
+We have added helper functions to create these proofs.
+\begin{lstlisting}
+// Constructed in C2
+Proof del = delegate_from_signed(C2, P, OK);  
+
+// Constructed in parent
+Formula pred = formula_pred(OK, principal_pcpl(C1));
+Proof  perm = says_from_signed(P, pred);
+
+// Constructed in C2
+Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
+\end{lstlisting}
+$P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed" to verify the signatures, and by ``init" to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
  \end{document}
