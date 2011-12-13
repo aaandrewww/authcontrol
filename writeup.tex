@@ -94,7 +94,7 @@ More sophisticated authorization logics are given by \citet{AURA} and \citet{Gar
 
 \begin{section}{Design}
 
-We plan to replace the current authorization mechanism for jOS system calls (\textsf{envid2env}) with a new mechanism based on a simple authorization logic.
+We plan to replace the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on a simple authorization logic.
 Our authorization system will use authorization proofs as capabilities and support dynamic authorization decisions through secure bindings.
 Because our authorization library will be implemented primarily in user space, it also provides a mechanism for implementing access control for user level resources.
 
@@ -103,7 +103,7 @@ Because our authorization library will be implemented primarily in user space, i
 The principals in our system will be environments, \emph{$env_1 \ldots env_n$}, and a special \emph{kernel} environment.
 We believe these are appropriate principals because our authorization decisions apply to system calls, primarily those for manipulating environments.
 
-\subsection{Authorization logic}
+\subsection{Authorization logic}\label{sec:logic}
 
 We plan to base our logic on the simple logic for access control given in \cite{Bauer}, but extend it to support dynamic authorization decisions. The syntax and semantics of the logic are given below and followed with a high level description.
 \\[1em]
@@ -142,11 +142,14 @@ This allows time-sensitive or revocable authorization decisions to be implemente
 \end{section}
 
 \begin{section}{Implementation}
-
-\subsection{Logic Definition and Implementation}
-\subsubsection{COQ}
-\subsubsection{C Library}
-\subsection{jOS Integration}
+We broke implementation into three stages.  We first embedded our logic into the Coq Proof Assistant.  Second, we ported that code to C as a stand-alone library.  Third, we integrated the library into the JOS operating system.
+\subsection{Coq}
+In order to ensure the correctness and completeness of our logic and proof checker, we first embedded it into the Coq Proof Assistant.  This enabled us to prove that our proof checker was correct and always terminated, as well as work out some of the implementation details in a strongly typed language.  For example, we first defined variables as strings and carried an environment mapping names to values.  This made the proof checker overly complicated and stripping it out led to a far simpler implementation both in Coq and C.  Writing the proof checker in Coq allowed us to prove that it was correct (in fact, using Coq's dependent types, we actually return the Coq proof that the proof checker is correct from the check function).  We therefore can be assured that we did not skip any corner cases, or over-simplify.
+\subsection{C Library}
+There is no way to directly compile Coq code into C code, so we performed this translation by hand.  This obviously invalidates our proof of correctness.  We gained the fact that our algorithms and data structures were correct, but have no such guarantee for the C implementation.  We attempted to compensate for this by writing a number of tests (now in \textsf{user/proof test.c}).  The C library defines the logic as in section \ref{sec:logic}.  For ease of use we also implemented functions to recursively print formulas and proofs, as well as constructors for primitive proofs, primitive formulas, principals, and for more complex, commonly used, proofs.  
+\newline\newline
+The context was implemented as a stack of formulas since the proof checker adds a formula to the context and, once it has been used, removes that formula.  Formulas and Proofs are represented as tagged \textsf{union}s of the primitive types together with an \textsf{enum} indicating the current type.  To simplify memory management all constructors perform a deep copy of all input data structures.
+\subsection{JOS Integration}
 \subsubsection{Library Functions}
 \subsubsection{System Calls}
 \subsubsection{Proof Sharing}
@@ -181,6 +184,13 @@ Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
 \end{lstlisting}
 $P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed" to verify the signatures, and by ``init" to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
 \end{section}
+
+\begin{section}{Future Work}
+\end{section}
+
+\begin{section}{Summary}
+\end{section}
+
 
 \bibliographystyle{plainnat}
 \bibliography{bib}
