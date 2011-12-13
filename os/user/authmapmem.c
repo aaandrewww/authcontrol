@@ -1,6 +1,7 @@
 #include <inc/lib.h>
 
 #define OK 42
+#define PAGESTOMAP 10
 
 static uint8_t heapBuffer[4 * 2 * PGSIZE];
 
@@ -10,11 +11,12 @@ void umain(int argc, char **argv) {
   set_heap(&heap);
   envid_t who;
   envid_t whos[2] = { 0, 0 };
-  int i;
+  int i, r;
   Proof del[2];
   Proof perm;
   Formula pred;
   Proof use_del;
+  uintptr_t vaddr;
 
   for (i = 0; i < 2; i++) {
     who = fork();
@@ -57,27 +59,38 @@ void umain(int argc, char **argv) {
 
     // second child
     if (whos[0] != 0) {
-      if (sys_page_alloc(0, UTEMP, PTE_U | PTE_W | PTE_P) < 0)
-        cprintf("ERROR allocating");
-
-      uint8_t *test = (uint8_t *) UTEMP;
-      int i;
-      for (i = 0; i < PGSIZE; i++) {
-        test[i] = i;
-      }
       cprintf("in env %u, mapping to %u\n", thisenv->env_id, other_child);
-      sys_page_map(0, UTEMP, other_child, UTEMP, PTE_U | PTE_W | PTE_P);
-      ipc_send(other_child, 0, 0, 0);
+      for (i = 0; i < PAGESTOMAP; i++) {
+        vaddr = (uintptr_t)UTEMP + i*PGSIZE;
+        if (sys_page_alloc(0, UTEMP, PTE_U | PTE_W | PTE_P) < 0)
+          cprintf("ERROR allocating");
+
+        uint8_t *test = (uint8_t *) UTEMP;
+        int i;
+        for (i = 0; i < PGSIZE; i++)
+          test[i] = i;
+
+        r = sys_page_map(0, UTEMP, other_child, (void *)vaddr, PTE_U | PTE_W | PTE_P);
+        if (r < 0)
+          cprintf("ERROR mapping");
+      }
+
+      ipc_send(other_child, 55, 0, 0);
     }
 
-    // second child
-
+    // first child
     if (whos[0] == 0) {
-      ipc_recv(0,0,0);
+      do{
+        r = ipc_recv(0,0,0);
+      } while (r == -E_AGAIN);
+
       uint8_t *test = (uint8_t *) UTEMP;
-      for (i = 0; i < PGSIZE; i++) {
-        cprintf("%u ", test[i]);
-      }
+      uint32_t count = 0;
+      for (i = 0; i < PAGESTOMAP*PGSIZE; i++)
+        if( test[i] >= 0)
+          count++;
+
+      cprintf("There were %u elements there should have been %u\n", count,  PAGESTOMAP*PGSIZE);
     }
 
   }
