@@ -181,12 +181,11 @@ If a system call, say \textsf{sys\_page\_map}, will affect a environment $A$ the
 // What will actually be proved is [A says OK(B)] where B has been substituted for x
 Formula F = formula_pred(OK, x);
 sys_set_goal(F);
-// Sign formula [B is OK] (this is F with B substituted for x)
 sys_sign_formula(formula_subst(F, x, B));
 
 // Constructed in B
 
-// Construct a proof of [A says F(B)]
+// Proof of [A says F(B)]
 Formula F_B_subst = formula_pred(OK, B);
 Proof P  = says_from_signed(A, F_B_subst);
 sys_set_proof(P);
@@ -214,6 +213,8 @@ sys_set_proof(P);
 // Map a page from B to A
 sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \end{lstlisting}
+
+\subsubsection{User Programs}
 \end{section}
 
 \begin{section}{Evaluation}
@@ -249,13 +250,13 @@ $
 \caption{Delegation Proof}
 \label{fig:delegation}
 \end{figure}
-\lstset{language=C,caption={\todo{Delegation}},label=code:delegation}
+\lstset{language=C,caption={Delegation using helper functions, proof sharing has been omitted},label=code:delegation}
 \begin{lstlisting}
 // Constructed in C2
 Proof del = delegate_from_signed(C2, P, OK);  
 
 // Constructed in parent
-Formula pred = formula_pred(OK, principal_pcpl(C1));
+Formula pred = formula_pred(OK, C1);
 Proof  perm = says_from_signed(P, pred);
 
 // Constructed in C2
@@ -265,14 +266,19 @@ In Listing \ref{code:delegation}, $P_1$ is a proof that $C_2$ delegates to $P$ f
 \end{section}
 
 \begin{section}{Future Work}
-Kernel principal.
-Multiple goals for a single environment.
-Proof caching (also in performance section).
+\todo{Kernel principal.}\newline
+\todo{Multiple goals for a single environment.}\newline
+\todo{Proof caching (also in performance section).}\newline
 \end{section}
 
 \begin{section}{Summary}
 \end{section}
 
+\begin{section}{Appendix: JOS Changes}
+List of files changed in JOS.
+\todo{Added:}\newline
+\todo{Modified}
+\end{section}
 
 \bibliographystyle{plainnat}
 \bibliography{bib}
