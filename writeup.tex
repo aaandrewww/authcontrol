@@ -34,12 +34,12 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \pagestyle{fancy}
 %\addtolength{\headwidth}{\marginparsep} %these change header-rule width
 %\addtolength{\headwidth}{\marginparwidth}
-\lhead{CS 261 Project Proposal}
+\lhead{CS 261 Project Report}
 \chead{} 
 \rhead{\thepage} 
 \lfoot{\small Andrew Johnson and Scott Moore} 
 \cfoot{} 
-\rfoot{\footnotesize CS 261 Project Proposal} 
+\rfoot{\footnotesize CS 261 Project Report} 
 \renewcommand{\headrulewidth}{.3pt} 
 \renewcommand{\footrulewidth}{.3pt}
 \setlength\voffset{-0.25in}
@@ -148,14 +148,22 @@ This allows time-sensitive or revocable authorization decisions to be implemente
 \end{section}
 
 \begin{section}{Implementation}
+
 We broke implementation into three stages.  We first embedded our logic into the Coq Proof Assistant.  Second, we ported that code to C as a stand-alone library.  Third, we integrated the library into the JOS operating system.
 \subsection{Coq}
 In order to ensure the correctness and completeness of our logic and proof checker, we first embedded it into the Coq Proof Assistant.  This enabled us to prove that our proof checker was correct and always terminated, as well as work out some of the implementation details in a strongly typed language.  For example, we first defined variables as strings and carried an environment mapping names to values.  This made the proof checker overly complicated and stripping it out led to a far simpler implementation both in Coq and C.  Writing the proof checker in Coq allowed us to prove that it was correct (in fact, using Coq's dependent types, we actually return the Coq proof that the proof checker is correct from the check function).  We therefore can be assured that we did not skip any corner cases, or over-simplify.  The logic, proof checker, and examples were implemented in about 400 lines in Coq.
 \subsection{C Library} \label{sec:clib}
-There is no way to directly compile Coq code into C code, so we performed this translation by hand.  This obviously invalidates our proof of correctness.  We gained the fact that our algorithms and data structures were correct, but have no such guarantee for the C implementation.  We attempted to compensate for this by writing a number of tests (now in \textsf{user/proof test.c}).  The C library defines the logic as in section \ref{sec:logic}.  For ease of use we also implemented functions to recursively print formulas and proofs, as well as constructors for primitive proofs, primitive formulas, principals, and for more complex, commonly used, proofs.  
+There is no way to directly compile Coq code into C code, so we performed this translation by hand.  This obviously invalidates our proof of correctness.  We gained the fact that our algorithms and data structures were correct, but have no such guarantee for the C implementation.  We attempted to compensate for this by writing a number of tests (now in \textsf{user/proof test.c}).  The C library defines the logic as in Figure \ref{fig:logic}.  For ease of use we also implemented functions to recursively print formulas and proofs, as well as constructors for primitive proofs, primitive formulas, principals, and for more complex, commonly used, proofs.  
 \newline\newline
 The context was implemented as a stack of formulas since the proof checker adds a formula to the context and, once it has been used, removes that formula.  Formulas and Proofs are represented as tagged \textsf{union}s of the primitive types together with an \textsf{enum} indicating the current type (another option would be to use C++ subclassing).  To simplify memory management, all constructors perform a deep copy of all input data structures.  This means that a proof can be freed without worry about the constituent subproofs and formulas.  To make this approach easy to implement, each of the data structures has a comparison function and a deep-copy function.  In addition, to ease debugging and introspection, each data structure can be printed as a pre-formatted latex string (many examples of which are in this document).  In total, the library implementation consists of approximately 2600 lines of C, about half of which is test code.
 \subsection{JOS Integration}
+\begin{figure}
+\[
+\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{B}{\pred{OK}{A}}} \quad \trfrac[\;tauto]{\trfrac[\;init]{\rtcheck}{\pred{OK}{A}}}{\says{B}{\pred{OK}{A}}}}{\says{B}{\pred{OK}{A}}}
+\]
+\caption{Simple Attestation Proof}
+\label{fig:attest}
+\end{figure}
 The library described in section \ref{sec:clib} provides a logic and a method to check proofs defined in that logic.  In order to use this for authorization we needed to integrate it into an operating system.  We chose to use JOS for simplicity; the existing authorization mechanism was easy to replace.  We chose to focus on replacing environment to environment authentication.  In JOS, an environment is authorized to manipulate another only if it is the direct parent environment. We replace this with a more flexible model built on our authorization logic.  Essentially, to manipulate environment A, environment B must provide a proof of a logical formula defined by A.  The modular design of our C library enables us to more or less drop it into JOS as a library.  In order to facilitate this we essentially only needed to implement a JOS memory manager (\textsf{malloc} and \textsf{free}) to replace the \textsf{stdlib} version.
 \subsubsection{Environments}
 Each environment has the option to define a single logical formula and add a pointer to it to their environment structure.  If environment A defines a formula
@@ -164,7 +172,8 @@ F = \says{A}{\pred{OK}{x}}
 \]
 then $F$ must be proved in order to manipulate $A$.  If environment $B$ has a proof of $F$ then $B$ adds a pointer to this proof in their environment structure before making a system call that would affect environment $A$.  More details on this are presented in the next section.
 \subsubsection{System Calls}
-If a system call, say \textsf{sys\_page\_map}, will affect a environment $A$ then, when $B$ makes that call, the JOS kernel uses the proof, $P$, that $B$ put into their environment structure and checks that $P$ is a valid proof of the formula, $F$, that $A$ has indicated.  Setting $F$ in $A$ and setting $P$ in $B$ are both accomplished using system calls.  We also add a system call for signing formulas, rather than implementing cryptographic digital signatures.  The kernel stores a list of all signed formulas and checks this list when checking a proof.  See below for a simple example.
+If a system call, say \textsf{sys\_page\_map}, will affect a environment $A$ then, when $B$ makes that call, the JOS kernel uses the proof, $P$, that $B$ put into their environment structure and checks that $P$ is a valid proof of the formula, $F$, that $A$ has indicated.  Setting $F$ in $A$ and setting $P$ in $B$ are both accomplished using system calls.  We also add a system call for signing formulas, rather than implementing cryptographic digital signatures.  The kernel stores a list of all signed formulas and checks this list when checking a proof.  See Listing \ref{code:attest} for a simple example, constructing and using the proof in Figure \ref{fig:attest}.
+\lstset{language=C,caption={\todo{Attestation}},label=code:attest}
 \begin{lstlisting}
 // Constructed in A
 
@@ -189,6 +198,7 @@ sys_page_map(0, Bvaddr, A, Avaddr, perm);
 During proof checking there are three runtime checks, context membership, signatures, confirmations.  The first is straightforward and the second is implemented as a special case of the first.  The third, confirmation, relies on code that is defined by the confirming environment.  my making a system call \textsf{sys\_set\_confirms\_upcall} the confirming environment, $A$, can set a function that should be called to check any statement of the form $\confirms{A}{F}$.  At runtime a candidate function is passed into the upcall, which returns a boolean value.  In our implementation we run this code in the proof checker, assuming it is well behaved (terminates, does not abuse privilege).  A future implementation could restrict upcalls to well-behaved functions and check this property at runtime.
 \subsubsection{Proof Sharing}
 It can be easier to construct a proof or parts of a proof in the environment which defines the goal to be proved.  In these cases the proofs need to be handed out to the provers.  To do this we created library functions to send and receive proofs.  These are implemented on top of IPC, adding handling of dynamically allocated data structures.  We can achieve the same result as above using proof sharing.
+\lstset{language=C,caption={\todo{Proof Sharing}},label=code:share}
 \begin{lstlisting}
 // Constructed in A
 Formula F = formula_pred(OK, x);
@@ -213,19 +223,33 @@ sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \caption{\todo{caption}}
 \label{fig:perf}
 \end{figure}
-
-\subsection{Usability}
-\end{section}
-\begin{section}{Example: Delegation}
-Suppose an environment wishes to accept as ``OK'' whatever another environment accepts as ``OK''.  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
-$C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.
+To evaluate the performance of the proof checker in the kernel we implemented a dummy system call that checks authorization and immediately returns.  This also allows for easily checking a proof which turned out to be useful for debugging proof construction.  We compared the performance of the existing parent/child check to that of checking a simple attestation proof as in the example in Listing \ref{code:attest}, and against a more complex delegation proof as described in Section \ref{sec:delegation}.  We measured CPU cycles from within QEMU using rdtsc().  These were measured from the time the system call function was called in the kernel to the time it returns so it does not include any kernel crossings.  The first plot in Figure \ref{fig:perf} shows the number of cycles for just the authentication checks.  Each circle is the average of 40,000 calls for \textsf{envid2env} and attestation and 1500 calls for delegation.  The second shows the number of cycles for the \textsf{sys\_env\_destroy} function call.  Each circle in this plot is a single call to \textsf{sys\_env\_destroy} (Note that we made many other system calls prior to \textsf{sys\_env\_destroy} since the first system call took significantly longer in each case due to what we assume were cache effects).
 \newline\newline
+The first plot in Figure \ref{fig:perf} shows a significant amount of slowdown.  The simple attestation is about 110 times slower than the simple parent/child check, and delegation is approximately 3.5 times slower than the simple check.  The proof for attestation can be seen in Figure \ref{fig:attest} and the proof for delegation in Figure \ref{fig:delegation}.  Each horizontal line is effectively either a runtime check or a run of the proof checker.  The simple proof has 4 checks while the delegation proof has 12, so we see an approximately linear slowdown with increased proof complexity.  On the right side of Figure \ref{fig:perf} we see that the work done by a complex system call, such as \textsf{sys\_env\_destroy}, dominates the proof checking time with less than 5\% slow down for simple proof checking and less than 15\% slowdown for the delegation proof.  Note that the delegation proof is enabling environment interactions that would be impossible in the parent/child scheme, an environment can fall back on the fast parent/child check by setting their goal to \textsf{NULL}.  Any scheme performing more complex checks would inevitably be slower, but we probably see additional slowdown as we trade performance for flexibility and generality.  
+\newline\newline
+Some of this performance can be gained back without sacrificing functionality.  Something that was successful in the \todo{NEXUS} paper was proof-chaching.  For frequently used proofs we could cache the proof checker output in the kernel, or at least cache the parts that do not require dynamic runtime checks, such as confirmation and signature verifications.  Not in the \todo{NEXUS} paper, environments could also provide a proof-caching service where they are presented with a valid complex proof and sign a copy of the proof goal, which can then be used in place of the original proof.  
+\subsection{Usability}
+\todo{UserPrograms}
+\newline
+\todo{pretty print}
+\newline
+\todo{helper constructors}
+
+\end{section}
+\begin{section}{Example: Delegation}\label{sec:delegation}
+Suppose an environment wishes to accept as ``OK'' whatever another environment accepts as ``OK''.  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
+$C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.  A typical proof using delegation can be seen in Figure \ref{fig:delegation}.  We have added helper functions to create these proofs.  The use of these to construct a proof can be seen in Listing \ref{code:delegation}.
+\newline\newline
+\begin{figure}
 $
 P_1 = \trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;tauto]{\trfrac[\;assump]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \\\\\\\\
 P_2 = \trfrac[\;tauto]{\trfrac[\;impl]{\trfrac[\;sign]{\trfrac[\;signed]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;tauto]{\trfrac[\;assump]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;assump]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\\
 \text{DELEGATION} = \trfrac[\;spec]{P_1 \quad C_1 \quad P_2}{\says{C_2}{\pred{OK}{C_1}}} \\\\\\\
 $
-We have added helper functions to create these proofs.
+\caption{Delegation Proof}
+\label{fig:delegation}
+\end{figure}
+\lstset{language=C,caption={\todo{Delegation}},label=code:delegation}
 \begin{lstlisting}
 // Constructed in C2
 Proof del = delegate_from_signed(C2, P, OK);  
@@ -237,14 +261,15 @@ Proof  perm = says_from_signed(P, pred);
 // Constructed in C2
 Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
 \end{lstlisting}
-$P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed'' to verify the signatures, and by ``assump'' to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
+In Listing \ref{code:delegation}, $P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed'' to verify the signatures, and by ``assump'' to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
 \end{section}
 
 \begin{section}{Future Work}
 Kernel principal.
+Multiple goals for a single environment.
+Proof caching (also in performance section).
 \end{section}
 
-Multiple goals for a single environment.
 \begin{section}{Summary}
 \end{section}
 
