@@ -48,6 +48,10 @@ void add_to_signed_context(Formula f) {
 
 bool
 check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {
+//  return true;
+
+  bool result;
+
 	if (proverEnv->proof == NULL) return false;
 
 	Heap authHeap;
@@ -58,10 +62,22 @@ check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {
 	Formula goal = formula_says(principal_pcpl(goalEnv->env_id), formula_subst(goalEnv->goal, 0, proverEnv->env_id));
 	lcr3(PADDR(proverEnv->env_pgdir));
 	
-	Context start = context_cp(signedStatements);
-	Proof proof = proof_cp(proverEnv->proof);
+	if (member(signedStatements, goal)) {
+	  result = true;
+	} else {
+	  Context start = context_cp(signedStatements);
+	  Proof proof = proof_cp(proverEnv->proof);
 	
-	bool result = proof_check(goal, proof, start);
+	  result = proof_check(goal, proof, start);
+
+    // Cache the proof
+    // TODO shouldn't cache proofs containing confirms
+    if(result) {
+        set_heap(&signedStatementsHeap);
+        push(signedStatements, goal);
+        set_heap(&authHeap);
+    }
+	}
 
 	freeall();
 	set_heap(oldHeap);
