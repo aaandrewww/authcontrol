@@ -108,8 +108,9 @@ More sophisticated authorization logics are given by \citet{AURA} and \citet{Gar
 
 \begin{section}{Design}
 
-We replaced the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a secure binding to specify an authorization goal which is used to mediate access to system calls affecting the environment.
-An authorization goal is a formula in our authorization logic. Access is granted to any principal presenting a proof of the authorization goal.
+We replaced the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a system call to specify an authorization goal which is used to mediate access to system calls affecting the environment.
+An authorization goal is a formula in our authorization logic. Access is granted to any principal presenting a proof of the authorization goal. This is accomplished by a system call that registers a proof to be used for subsequent system calls. We describe the details of our JOS implementation in Section~\ref{sec:impl}.
+If an environment does not specify an authorization goal, JOS's original parent-child authorization scheme is used.
 
 Formulas in our logic have the following syntax: \\[1em]
 \begin{tabular}{llcl}
@@ -119,7 +120,13 @@ Formulas in our logic have the following syntax: \\[1em]
 \emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,$F$ \\
 \end{tabular} \\[1em]
 
-Formulas include first order predicates over principals, implication, and universal quanitification over principals. Conjunction can be encoded as implication ($A \wedge B \rightarrow C \equiv A \rightarrow B \rightarrow C$). The remaining formulas describe a principal's beliefs. The formula \says{A}{F} can be interpreted as ``principal $A$ believes the formula $F$ to be true.'' In general, we can infer statements of this form by logical inference from the set of initial beliefs of the principal and the beliefs of other principals. We distinguish between two types of belief: these initial, or \emph{asserted}, beliefs and derived beliefs.
+Formulas include first order predicates over principals, implication, and universal quanitification over principals. Conjunction can be encoded as implication ($A \wedge B \rightarrow C \equiv A \rightarrow B \rightarrow C$). The remaining formulas describe a principal's beliefs. The formula \says{A}{F} can be interpreted as ``principal $A$ believes the formula $F$ to be true.'' In general, we can infer statements of this form by logical inference from the set of initial beliefs of the principal and the beliefs of other principals. We distinguish between two types of belief: these initial, or \emph{asserted}, beliefs and derived beliefs. \textsf{says} denotes derived beliefs, while \textsf{signed} and \textsf{confirms} represent asserted beliefs.
+
+\textsf{signed} beliefs are irrevocable. In our system, environments assert irrevocable beliefs by registering them with the kernel via a system call.
+\confirms{A}{F} is a new formula we are adding to the logic and corresponds with the authority abstraction in the Nexus system \cite{Nexus}. 
+\confirms{A}{F} represents a run time authorization decision. \confirms{A}{F} is validated by invoking a decision procedure in $A$ that takes the authorization formula $F$ as input and returns true if $A$ believes $F$.
+Crucially, checking the validity $\confirms{A}{F}$ does not create a reusable proof object.
+This allows time-sensitive or revocable authorization decisions to be implemented on top of our simple logic without explicitly incorporating time or revocation as primitives.
 
 \begin{figure}
 \center
@@ -146,14 +153,10 @@ The remaining rules are used to infer the beliefs of principals. \tautorule{} sa
 \medskip
 Our logic has two properties that make it (like NAL and \citet{Bauer}'s logic) particularly appropriate for use in an authorization system. First, because \saysrule{}, \saysconfrule{}, and \sayssignrule{} are specific to particular principals, the impact of a malicious or errant principal is limited to the authorization decisions that have been delegated to it.
 Second, because our logic is constructive, proofs not only demonstrate the capability to access a resource, but an audit trail describing how that access was granted.
-
-\confirms{A}{F} is a new formula we are adding to the logic and corresponds with the authority abstraction in the Nexus system \cite{Nexus}. 
-\confirms{A}{F} is a \emph{secure binding} of a run time authorization decision to a principal. \confirms{A}{F} is validated by invoking a decision procedure in $A$ that takes the authorization formula $F$ as input and returns true if $A$ believes $F$.
-Crucially, checking the validity $\confirms{A}{F}$ does not create a reusable proof object.
-This allows time-sensitive or revocable authorization decisions to be implemented on top of our simple logic without explicitly incorporating time or revocation as primitives.
 \end{section}
 
 \begin{section}{Implementation}
+\label{sec:impl}
 
 We broke implementation into three stages.  We first embedded our logic into the Coq Proof Assistant.  Second, we ported that code to C as a stand-alone library.  Third, we integrated the library into the JOS operating system.
 \subsection{Coq}
