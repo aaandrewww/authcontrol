@@ -50,6 +50,19 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \usepackage{trfrac}
+
+\newcommand{\ruletext}[1]{{\scriptsize\textsf{#1}}}
+\newcommand{\signrule}{\ruletext{SIGN}}
+\newcommand{\confrule}{\ruletext{CONF}}
+\newcommand{\assumprule}{\ruletext{ASSUMP}}
+\newcommand{\tautorule}{\ruletext{TAUTO}}
+\newcommand{\weakenrule}{\ruletext{WEAKEN}}
+\newcommand{\implrule}{\ruletext{IMPL}}
+\newcommand{\saysrule}{\ruletext{SAYS}}
+\newcommand{\specrule}{\ruletext{SPEC}}
+\newcommand{\sayssignrule}{\ruletext{SAYS SIGN}}
+\newcommand{\saysconfrule}{\ruletext{SAYS CONF}}
+
 \newcommand{\sign}[2]{\ensuremath{#1\;\textsf{signed}\;#2}}
 \newcommand{\imp}[2]{\ensuremath{#1 \rightarrow #2}}
 \newcommand{\says}[2]{\ensuremath{#1\;\textsf{says}\;#2}}
@@ -106,36 +119,30 @@ Formulas in our logic have the following syntax: \\[1em]
 \emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,$F$ \\
 \end{tabular} \\[1em]
 
-Formulas include first order predicates over principals, implication, and universal quanitification over principals. Conjunction can be encoded as implication ($A \wedge B \implies C \equiv A \implies B \implies C$). The remaining formulas describe a principal's beliefs. The formula \says{A}{F} can be interpreted as ``principal $A$ believes the formula $F$ to be true.'' In general, we can infer statements of this form by logical inference from the set of initial beliefs of the principal and the beliefs of other principals. We distinguish between two types of belief: these initial, or \emph{asserted}, beliefs and derived beliefs.
+Formulas include first order predicates over principals, implication, and universal quanitification over principals. Conjunction can be encoded as implication ($A \wedge B \rightarrow C \equiv A \rightarrow B \rightarrow C$). The remaining formulas describe a principal's beliefs. The formula \says{A}{F} can be interpreted as ``principal $A$ believes the formula $F$ to be true.'' In general, we can infer statements of this form by logical inference from the set of initial beliefs of the principal and the beliefs of other principals. We distinguish between two types of belief: these initial, or \emph{asserted}, beliefs and derived beliefs.
 
-The inference rules for our logic are given in Figure~\ref{fig:logic}.
-Our logic is also constructive, and thus proofs not only demonstrate a capability to access a resource, but an audit trail describing how that access was granted.
+The inference rules for our logic are given in Figure~\ref{fig:logic}. Rules \weakenrule{}, \implrule{}, \specrule{}, and \assumprule{} are standard.
+The remaining rules are used to infer the beliefs of principals. \tautorule{} says that a principal will believe any objectively true statement. The \saysrule{} rule says that a principal believes anything that can be inferred by assuming its other beliefs are true. The \saysconfrule{} and \sayssignrule{} rules are similar, but refer to asserted beliefs, which are in turn validated by runtime checks.
+
+Our logic has two properties that make it (like NAL and \citet{Bauer}'s logic) particularly appropriate for use in an authorization system. First, because \saysrule{}, \saysconfrule{}, and \sayssignrule{} are specific to particular principals, the impact of a malicious or errant principal is limited to the authorization decisions that have been delegated to it.
+Second, because our logic is constructive, proofs not only demonstrate the capability to access a resource, but an audit trail describing how that access was granted.
 
 \begin{figure}
 \center
-$\trfrac[\;signed]{\rtcheck}{\entails{\ctxt}{\sign{A}{F}}}$ \hfil
-$\trfrac[\;confirms]{\rtcheck}{\entails{\ctxt}{\confirms{A}{F}}}$ \hfil
-$\trfrac[\;assump]{F \in \ctxt}{\entails{\ctxt}{F}}$ \\[1em]
+$\trfrac[\;\signrule]{\rtcheck}{\entails{\ctxt}{\sign{A}{F}}}$ \hfil
+$\trfrac[\;\confrule]{\rtcheck}{\entails{\ctxt}{\confirms{A}{F}}}$ \hfil
+$\trfrac[\;\assumprule]{F \in \ctxt}{\entails{\ctxt}{F}}$ \\[1em]
 
-$\trfrac[\;tauto]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfil
-$\trfrac[\;weaken impl]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfil
-$\trfrac[\;impl]{\entails{\ctxt}{F_1} \quad \entails{\ctxt}{\imp{F_1}{F_2}}}{\entails{\ctxt}{F_2}}$ \\[1em]
-
-$\trfrac[\;sign]{\entails{\ctxt}{\sign{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
-$\trfrac[\;conf]{\entails{\ctxt}{\confirms{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \\[1em]
-
-$\trfrac[\;says]{\entails{\ctxt}{\says{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
-$\trfrac[\;spec]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
+$\trfrac[\;\tautorule]{\entails{\ctxt}{F}}{\entails{\ctxt}{\says{A}{F}}}$ \hfil
+$\trfrac[\;\weakenrule]{\entails{\ctxt,F_1}{F_2}}{\entails{\ctxt}{\imp{F_1}{F_2}}}$ \hfil
+$\trfrac[\;\implrule]{\entails{\ctxt}{F_1} \quad \entails{\ctxt}{\imp{F_1}{F_2}}}{\entails{\ctxt}{F_2}}$ \\[1em]
+$\trfrac[\;\sayssignrule]{\entails{\ctxt}{\sign{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;\saysconfrule]{\entails{\ctxt}{\confirms{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \\[1em]
+$\trfrac[\;\saysrule]{\entails{\ctxt}{\says{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
+$\trfrac[\;\specrule]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
 \caption{Inference rules of our authorization logic}
 \label{fig:logic}
 \end{figure}
-
-The meta variable $A$ in the formulas \textsf{signed}, \textsf{says} and \textsf{confirms} ranges over principals.
-$P$ would denotes uninterpreted first-order predicates (e.g., \pred{Trusted}{Env}, \pred{Parent}{Env}).
-The formula \imp{F_1}{F_2} denotes implication. 
-
-\sign{A}{F} indicates that $A$ believes $F$ to be true; at run time, it corresponds to a digitally signed assertion.
-\says{A}{F} denotes that $F$ is a statement which $A$ believes given the formulae asserted by A and the beliefs of other principals.
 
 \paragraph{Example} Suppose that principal $A$ wishes to delegate its authorization decisions to $B$. Then $A$ would assert \sign{A}{\imp{(\says{B}{\pred{OK}{Env}})}{\pred{OK}{Env}}}. Now for any principal $C$ authorized by $B$ (\says{B}{\pred{OK}{C}}), we can derive \says{A}{\pred{OK}{C}}.
 
