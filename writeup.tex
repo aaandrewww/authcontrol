@@ -246,7 +246,7 @@ Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
 In Listing \ref{code:delegation}, $P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed'' to verify the signatures, and by ``assump'' to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
 
 \subsubsection{Runtime Verification}
-During proof checking there are three runtime checks: context membership, signatures,  and confirmations.  The first is straightforward list inclusion, and the second is implemented as a special case of the first.  The third, confirmation, relies on code that is defined by the confirming environment.  By making the system call, \textsf{sys\_set\_confirms\_upcall}, the confirming environment, $A$, can set a function that should be called to check any statement of the form $\confirms{A}{F}$.  At runtime a candidate Formula is passed into the upcall, which returns a boolean value.  In our implementation we run this code in the proof checker (in the kernel), assuming it is well behaved (terminates, does not abuse privilege).  A future implementation should restrict upcalls to well-behaved functions and check this property at runtime. Alternatively, an interuptable kernel could implement these upcalls through IPC. Nexus takes the latter approach.
+During proof checking there are three runtime checks: context membership, signatures, and confirmations.  The first is straightforward list inclusion, and the second is implemented as a special case of the first.  The third, confirmation, relies on code that is defined by the confirming environment.  By making the system call, \textsf{sys\_set\_confirms\_upcall}, the confirming environment, $A$, can set a function that should be called to check any statement of the form $\confirms{A}{F}$.  At runtime a candidate Formula is passed into the upcall, which returns a boolean value.  In our implementation we run this code in the proof checker (in the kernel), assuming it is well behaved (terminates, does not abuse privilege).  A future implementation should restrict upcalls to well-behaved functions and check this property at runtime. Alternatively, an interuptable kernel could implement these upcalls through IPC. Nexus takes the latter approach.
 
 \subsubsection{Proof Sharing}
 It can be easier to construct a proof or parts of a proof in the environment which defines the goal to be proved.  In these cases the proofs need to be handed out to the provers.  To do this we created library functions to send and receive proofs.  These are implemented on top of IPC, adding handling of dynamically allocated data structures.  We can achieve the same result as in Listing \ref{code:attest} using proof sharing as seen in Listing \ref{code:share}.
@@ -268,7 +268,7 @@ sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \end{lstlisting}
 
 \subsubsection{Proof Caching}\label{sec:cache}
-We implement a simple form of proof caching.  If the proof checker returns true, we add that proof's goal to a persistent context located in the kernel.  When a proof is checked we first check whether the proof's goal is already in the kernel's context.  If it is then we immediately return true.  Note that we should not cache any proofs using confirmation, since this is a dynamic runtime check.  In our prototype implementation of proof-caching we do not take this into account. The effects of caching can be seen in the Section~\ref{sec:eval}.
+We implement a simple form of proof caching.  If the proof checker returns true, we add that proof's goal to a persistent context located in the kernel.  When a proof is checked we first check whether the proof's goal is already in the kernel's context.  If it is then we immediately return true.  Note that we should not cache any proofs using confirmation, since this is a dynamic runtime check.  In our prototype implementation of proof-caching we do not take this into account. The effects of caching can be seen in the Section~\ref{sec:eval}. Note that by default proof-caching is disabled (enable in \textsf{kern/env.c}, requires recompilation).
 
 \subsubsection{User Programs}
 We implemented several user space programs to test our authorization system. Here we give brief descriptions:
@@ -296,16 +296,23 @@ The left plot in Figure \ref{fig:perf} shows a significant amount of slowdown.  
 Some of the performance losses in our system can be gained back without sacrificing functionality. A useful optimization in the Nexus operating system was proof-caching \cite{Nexus}.  For frequently used proofs we could cache the proof checker output in the kernel, or at least cache the parts that do not require dynamic runtime checks (everything but confirmation verifications). Another interesting possibility is for environments to provide proof-shortening services in user space. For example, an environment, $A$, when presented with a complex, valid complex proof of $\says{A}{F}$ could sign a copy of $F$, which can then be used in place of the original proof. We leave this as future work.
 
 As discussed in Section~\ref{sec:cache} we implemented a rudimentary proof-caching mechanism within the kernel. The center plot of Figure \ref{fig:perf} shows the effect of proof caching on repeated authorization checks.  As expected we see a dramatic reduction in authorization time.  In fact, with proof-caching, we can map 1,000 pages faster than we can send them over IPC. Without proof-caching, authorization checks take about twice the amount of time as sending IPC messages.
+
 \subsection{Usability}
-\todo{pretty print}
-\newline
-\todo{helper constructors}
+Creating a proof like the one in Figure \ref{fig:delegation} is daunting.  To simplify this we added a number of Formula and Proof constructors that facilitate the construction of such proofs.  We would suggest implementing specialized constructors for any frequently used complex proofs.  A typical use of these constructors is shown in Section \ref{sec:delegation}.
+\newline\newline 
+We were also careful about adding useful error messages when a proof fails to check.  We are fairly confident that our proof checker returns the correct result, but debugging a large invalid proof is difficult.  If a small part of a large proof is invalid then this part will be printed along with a useful message conveying why it was invalid.  In addition the error messages contain a formatted \LaTeX{ }string which can then be visualized in a manner similar to that in Figures \ref{fig:attest} and \ref{fig:delegation}.
+\newline\newline
+We also made it easier to share proofs using our wrapper around IPC as discussed in \ref{sec:share}.  We simplified memory management by making our data structures more or less functional by deep-copying input data.  This is a simplification that costs us when it comes to performance.
 
 \section{Future Work}
-\todo{Kernel principal.}\newline
-\todo{Multiple goals for a single environment. Multiple up calls}\newline
-\todo{Proof caching (also in performance section).}\newline
-\todo{Other uses. access control, capabilities}\newline
+Due to time constraints and design decisions we left interesting features out of our implementation.  
+\begin{enumerate}
+\item It would add flexibility to allow for multiple goals to be accepted by a single environment, even allowing for different goals for use under different circumstances.  
+\item There are a number of uses for an authorization logic besides environment checks.  Most obviously an access control system could be based on our logic and use the same library functions.  In addition some user programs that require authentication could use our authorization logic and proof checker as a library.  
+\item Another feature we wanted to implement was an additional privileged, ``kernel principal".  By default every environment could delicate to the kernel principal who could sign statement attesting to parent/child and sibling relationships.
+\item A real system would need more robust confirmation mechanism.  We could use code-uploading and runtime code verification to remove the need to trust the confirmation upcall code.
+\item We would like to implement more full-featured proof-caching.  It would be nice for environments to be able to verify and sign valid proofs themselves.  If environment $A$ were presented with a proof of $\says{A}{F}$ then $A$ could sign $F$ and present the signed copy to the prover.
+\end{enumerate}
 
 \section{Summary}
 
