@@ -56,7 +56,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \newcommand{\confirms}[2]{\ensuremath{#1\;\textsf{confirms}\;#2}}
 \newcommand{\ctxt}[0]{\ensuremath{\Gamma}}
 \newcommand{\nil}[0]{\ensuremath{\cdot}}
-\newcommand{\bnfsep}[0]{\ensuremath{\quad\mid\quad}}
+\newcommand{\bnfsep}[0]{\ensuremath{\;\mid\;}}
 \newcommand{\entails}[2]{\ensuremath{#1 \vdash #2}}
 \newcommand{\pred}[2]{\ensuremath{\textsc{#1}(#2)}}
 \newcommand{\subst}[2]{\ensuremath{[#1/#2]}}
@@ -95,33 +95,23 @@ More sophisticated authorization logics are given by \citet{AURA} and \citet{Gar
 
 \begin{section}{Design}
 
-We replaced the current authorization mechanism for jOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a secure binding to specify an authorization goal which is used to mediate access to system calls affecting the environment.
+We replaced the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a secure binding to specify an authorization goal which is used to mediate access to system calls affecting the environment.
 An authorization goal is a formula in our authorization logic. Access is granted to any principal presenting a proof of the authorization goal.
 
-
-Our logic is based on the logic given in \citep{Bauer}, but is similar to the Nexus Authorization Logic (NAL). Like NAL, our logic is constructive, and thus a proof of authorization is also an audit record of the principals and inferences
-
-Our new system uses authorization proofs as capabilities and allows principals 
-
-
-\todo{rework}
-We plan to replace the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on a simple authorization logic.
-Our authorization system will use authorization proofs as capabilities and support dynamic authorization decisions through secure bindings.
-Because our authorization library will be implemented primarily in user space, it also provides a mechanism for implementing access control for user level resources.
-
-The principals in our system are environments, \emph{$env_1 \ldots env_n$}.
-We believe these are appropriate principals because our authorization decisions apply to system calls, primarily those for manipulating environments.
-
-Our logic is based on the simple logic for access control given in \cite{Bauer}, but extended to support dynamic authorization decisions. The syntax and semantics of the logic are given below and followed with a high level description.
-\\[1em]
+Formulas in our logic have the following syntax: \\[1em]
 \begin{tabular}{llcl}
 \emph{principals} & R & ::= & $x$ \bnfsep $v$ \\
 \emph{predicates} & P & ::= & $pred(R)$ \\
-\emph{formulas} & F & ::= & $P$ \bnfsep \imp{F_1}{F_2} \bnfsep \abs{F}\\
-                &   & \bnfsep & \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F}\\
+\emph{formulas} & F & ::= & $P$ \bnfsep \imp{F_1}{F_2} \bnfsep \abs{F} \bnfsep \sign{A}{F} \bnfsep \says{A}{F} \bnfsep \confirms{A}{F}\\
 \emph{contexts} & \ctxt & ::= & \nil \bnfsep \ctxt,$F$ \\
-\end{tabular}
-{
+\end{tabular} \\[1em]
+
+Formulas include first order predicates over principals, implication, and universal quanitification over principals. Conjunction can be encoded as implication ($A \wedge B \implies C \equiv A \implies B \implies C$). The remaining formulas describe a principal's beliefs. The formula \says{A}{F} can be interpreted as ``principal $A$ believes the formula $F$ to be true.'' In general, we can infer statements of this form by logical inference from the set of initial beliefs of the principal and the beliefs of other principals. We distinguish between two types of belief: these initial, or \emph{asserted}, beliefs and derived beliefs.
+
+The inference rules for our logic are given in Figure~\ref{fig:logic}.
+Our logic is also constructive, and thus proofs not only demonstrate a capability to access a resource, but an audit trail describing how that access was granted.
+
+\begin{figure}
 \center
 $\trfrac[\;signed]{\rtcheck}{\entails{\ctxt}{\sign{A}{F}}}$ \hfil
 $\trfrac[\;confirms]{\rtcheck}{\entails{\ctxt}{\confirms{A}{F}}}$ \hfil
@@ -136,9 +126,9 @@ $\trfrac[\;conf]{\entails{\ctxt}{\confirms{A}{F_1}} \quad \entails{\ctxt,F_1}{\s
 
 $\trfrac[\;says]{\entails{\ctxt}{\says{A}{F_1}} \quad \entails{\ctxt,F_1}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$ \hfil
 $\trfrac[\;spec]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\entails{\ctxt,F_1\subst{p}{x}}{\says{A}{F_2}}}{\entails{\ctxt}{\says{A}{F_2}}}$
-}
-
-\medskip
+\caption{Inference rules of our authorization logic}
+\label{fig:logic}
+\end{figure}
 
 The meta variable $A$ in the formulas \textsf{signed}, \textsf{says} and \textsf{confirms} ranges over principals.
 $P$ would denotes uninterpreted first-order predicates (e.g., \pred{Trusted}{Env}, \pred{Parent}{Env}).
