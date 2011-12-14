@@ -259,7 +259,17 @@ Suppose an environment wishes to accept as ``OK'' whatever another environment a
 $C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.  A typical proof using delegation can be seen in Figure \ref{fig:delegation}.  We have added helper functions to create these proofs.  The use of these to construct a proof can be seen in Listing \ref{code:delegation}.
 \newline\newline
 \begin{figure}
-
+$C_2$ \textsf{delegates to} $P$:
+\begin{center}
+$\trfrac[\;\sayssignrule]{\trfrac[\;\signrule]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;\tautorule]{\trfrac[\;\assumprule]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}$
+\end{center}
+$P$ \textsf{authorizes} $C_1$:
+\begin{center} $\trfrac[\;\tautorule]{\trfrac[\;\implrule]{\trfrac[\;\sayssignrule]{\trfrac[\;\signrule]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;\tautorule]{\trfrac[\;\assumprule]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;\assumprule]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}}$
+\end{center}
+$\says{C_2}{\pred{OK}{C_1}}$:
+\begin{center}
+$\trfrac[\;\specrule]{C_2 \textsf{ delegates to } P \quad C_1 \quad P \textsf{ authorizes } C_1}{\says{C_2}{\pred{OK}{C_1}}}$
+\end{center}
 \caption{Delegation Proof}
 \label{fig:delegation}
 \end{figure}
