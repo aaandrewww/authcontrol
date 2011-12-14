@@ -88,17 +88,21 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 \thispagestyle{empty}
 
 \begin{section}{Introduction}
+Access control in JOS is overly restrictive and mandatory. System calls that modify an environment may only be invoked by the the environment itself or its immediate ancestor. As a result, applications that do not have a clear hierarchical structure must use IPC for all inter-process communication. In particular, sharing memory requires per-page synchronization through IPC calls.
+
 Authorization logics are a principled technique for implementing rule-based access control mechanisms.
 They have several advantages over traditional OS access control mechanisms such as access control lists.
 In particular, they allow principals to express access control decisions for which they do not have complete information.
 Authorization logics also provide \emph{proof-carrying authorization}. That is, the capability to access a resource carries with it the set of authorization decisions that granted it.
-\todo{more introduction}
+
+We investigated the feasibility of using authorization logic as an OS-level access control mechanism by implementing such a system in JOS. \todo{what is our hypothesis?}
 
 \subsection{Related work}
 \todo{more information and reword some}
 There has been quite a lot of work on authorization logics, particularly in the context of distributed systems.
 Most recently, \citet{Nexus} developed the Nexus operating system, which uses authorization logic to combine different trust bases for secure systems into a cohesive authorization system.
 Our system borrows Nexus's authority mechanism to allow revocation and other dynamic authorization policies.
+\todo{longer description of Nexus}
 
 Our authorization logic is based on \citet{Bauer}'s authorization logic extended with a primitive for dynamic authorization checks and cut elimination, which reduces the size of proofs.
 More sophisticated authorization logics are given by \citet{AURA} and \citet{Garg}.
@@ -106,7 +110,7 @@ More sophisticated authorization logics are given by \citet{AURA} and \citet{Gar
 \todo{relationship to capabilities}
 \end{section}
 
-\begin{section}{Design}
+\begin{section}{Overview}
 
 We replaced the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a system call to specify an authorization goal which is used to mediate access to system calls affecting the environment.
 An authorization goal is a formula in our authorization logic. Access is granted to any principal presenting a proof of the authorization goal. This is accomplished by a system call that registers a proof to be used for subsequent system calls. We describe the details of our JOS implementation in Section~\ref{sec:impl}.
