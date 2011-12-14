@@ -101,11 +101,12 @@ Authorization logics also provide \emph{proof-carrying authorization}. That is, 
 We showed the feasibility of using authorization logic as an OS-level access control mechanism by implementing it in JOS. We found that its performance was comparable to existing mechanisms in JOS, particularly if the results of proof-checking are cached by the kernel.
 
 \subsection{Related work}
-Existing work on authorization logics has focused primarily on distributed systems. \todo{describe a few}
-
+Existing work on authorization logics has focused primarily on distributed systems.
 More recently, \citet{Nexus} developed the Nexus operating system, which uses authorization logic to combine different trust bases for secure systems into a cohesive authorization system.
-\todo{Some of the optimizations used by nexus}. \todo{Nexus's dynamic authorization policies}
-Our system borrows Nexus's authority mechanism to allow revocation and other dynamic authorization policies.
+By aggressively caching evaluated proofs and avoiding cryptography by storing assertions in the kernel, Nexus achieves a 6\% overhead on a toy multi-tier webserver implementing a simple social networking site.
+Nexus also describes a mechanism for enforcing state-based authorization policies in an authorization logic system.
+Nexus supports \emph{authorities}, which verify authorization statements only when asked. Since the results of these checks cannot be reused, this mechanism can be used to support revocation and other dynamic authorization policies.
+We incorporate a similar mechanism into our system.
 
 Our authorization logic is based on \citet{Bauer}'s authorization logic extended with a primitive for dynamic authorization checks and cut elimination, which reduces the size of proofs.
 More sophisticated authorization logics are given by \citet{AURA} and \citet{Garg}.
