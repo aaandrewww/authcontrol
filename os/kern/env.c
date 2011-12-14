@@ -12,8 +12,11 @@
 #include <kern/trap.h>
 #include <kern/monitor.h>
 #include <kern/sched.h>
+#include <kern/proofcheck.h>
+#include <inc/proof.h>
 
 #include <inc/mm.h>
+
 
 struct Env *envs = NULL;		// All environments
 struct Env *curenv = NULL;		// The current env

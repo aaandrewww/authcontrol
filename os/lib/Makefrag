@@ -37,7 +37,8 @@ LIB_SRCFILES :=		$(LIB_SRCFILES) \
 	     		lib/mm.c \
 			lib/context.c \
 			lib/proof.c \
-			lib/formula.c
+			lib/formula.c \
+			lib/prooflib.c
 
 
 LIB_OBJFILES := $(patsubst lib/%.c, $(OBJDIR)/lib/%.o, $(LIB_SRCFILES))
