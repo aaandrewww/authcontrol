@@ -87,7 +87,7 @@ escapeinside={\%*}{*)}          % if you want to add a comment within your code
 
 \thispagestyle{empty}
 
-\begin{section}{Introduction}
+\section{Introduction}
 Access control in JOS is overly restrictive and mandatory. System calls that modify an environment may only be invoked by the the environment itself or its immediate ancestor. As a result, applications that do not have a clear hierarchical structure must use IPC for all inter-process communication. In particular, sharing memory requires per-page synchronization through IPC calls.
 
 Authorization logics are a principled technique for implementing rule-based access control mechanisms.
@@ -108,9 +108,8 @@ Our authorization logic is based on \citet{Bauer}'s authorization logic extended
 More sophisticated authorization logics are given by \citet{AURA} and \citet{Garg}.
 
 \todo{relationship to capabilities}
-\end{section}
 
-\begin{section}{Overview}
+\section{Overview}
 
 We replaced the current authorization mechanism for JOS system calls (\textsf{envid2env}) with a new mechanism based on authorization logic. Principals (environments) use a system call to specify an authorization goal which is used to mediate access to system calls affecting the environment.
 An authorization goal is a formula in our authorization logic. Access is granted to any principal presenting a proof of the authorization goal. This is accomplished by a system call that registers a proof to be used for subsequent system calls. We describe the details of our JOS implementation in Section~\ref{sec:impl}.
@@ -149,17 +148,13 @@ $\trfrac[\;\specrule]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\
 \label{fig:logic}
 \end{figure}
 
-The inference rules for our logic are given in Figure~\ref{fig:logic}. Rules \weakenrule{}, \implrule{}, \specrule{}, and \assumprule{} are standard.
-The remaining rules are used to infer the beliefs of principals. \tautorule{} says that a principal will believe any objectively true statement. The \saysrule{} rule says that a principal believes anything that can be inferred by assuming its other beliefs are true. The \saysconfrule{} and \sayssignrule{} rules are similar, but refer to asserted beliefs, which are in turn validated by runtime checks.
-
-\paragraph{Example} Suppose that principal $A$ wishes to delegate its authorization decisions to $B$. Then $A$ would assert \sign{A}{\imp{(\says{B}{\pred{OK}{Env}})}{\pred{OK}{Env}}}. Now for any principal $C$ authorized by $B$ (\says{B}{\pred{OK}{C}}), we can derive \says{A}{\pred{OK}{C}}. An example proof is given in Figure~\ref{fig:delegation}.
+\paragraph{Example} Suppose that principal $A$ wishes to delegate its authorization decisions to $B$. Then $A$ would assert \sign{A}{\imp{(\says{B}{\pred{OK}{Env}})}{\pred{OK}{Env}}}. Now for any principal $C$ authorized by $B$ (\says{B}{\pred{OK}{C}}), we can derive \says{A}{\pred{OK}{C}}.
 
 \medskip
 Our logic has two properties that make it (like NAL and \citet{Bauer}'s logic) particularly appropriate for use in an authorization system. First, because \saysrule{}, \saysconfrule{}, and \sayssignrule{} are specific to particular principals, the impact of a malicious or errant principal is limited to the authorization decisions that have been delegated to it.
 Second, because our logic is constructive, proofs not only demonstrate the capability to access a resource, but an audit trail describing how that access was granted.
-\end{section}
 
-\begin{section}{Implementation}
+\section{Implementation}
 \label{sec:impl}
 
 We broke implementation into three stages.  We first embedded our logic into the Coq Proof Assistant.  Second, we ported that code to C as a stand-alone library.  Third, we integrated the library into the JOS operating system.
@@ -173,7 +168,7 @@ To simplify memory management, all constructors perform a deep copy of all input
 \subsection{JOS Integration}
 \begin{figure}
 \[
-\trfrac[\;\sayssignrule]{\trfrac[\;\signrule]{\rtcheck}{\sign{B}{\pred{OK}{A}}} \quad \trfrac[\;\tautorule]{\trfrac[\;\assumprule]{\rtcheck}{\pred{OK}{A}}}{\says{B}{\pred{OK}{A}}}}{\says{B}{\pred{OK}{A}}}
+\trfrac[\;\sayssignrule]{\trfrac[\;\sayssignrule]{\rtcheck}{\sign{B}{\pred{OK}{A}}} \quad \trfrac[\;\tautorule]{\trfrac[\;\assumprule]{\rtcheck}{\pred{OK}{A}}}{\says{B}{\pred{OK}{A}}}}{\says{B}{\pred{OK}{A}}}
 \]
 \caption{Simple Attestation Proof}
 \label{fig:attest}
@@ -228,6 +223,9 @@ sys_set_proof(P);
 sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \end{lstlisting}
 
+\subsubsection{Proof Caching}\label{sec:cache}
+We implement a simple form of proof caching.  If the proof checker returns true, we add that proof's goal to a persistent context located in the kernel.  When a proof is checked we first check whether the proof's goal is already in the kernel's context.  If it is then we immediately return true.  Note that we should not cache any proofs using confirmation, since this is a dynamic runtime check.  In our proof of concept proof-caching we do not take this into account.  The effects of caching can be seen in the Section \ref{sec:eval}.
+
 \subsubsection{User Programs}
 \paragraph{prooftest} Contains tests for functions pertaining to building, printing, and copying Formulas and building, printing, copying, and checking Proofs.
 \paragraph{prooftimertest} Implements infrastructure used for performance testing.
@@ -235,42 +233,33 @@ sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \paragraph{confirmstest} Sets a confirms up call and creates a proof that uses it.
 \paragraph{fratricide} The parent environment forks 10 children.  Each one delegates to the parent.  The parent then spawns the 11th child, call him Killer, and signs a statement that Killer is OK.  The parent then exits gracefully, and Killer senselessly \textsf{sys\_env\_destroy}s the other 10 children before \textsf{sys\_env\_destroy}ing himself.
 \paragraph{authmemmap} The parent environment forks 2 children.  Each delegates to the parent who then signs that the second environment is OK.  The second environment is then able to map a number of pages into the first environment with a single IPC message, which is used only for synchronization.  Previously each page would need to be shared via a separate IPC message.  (Note that occasionally this program runs into a race condition where the IPC message was received, but the receiving environment still page faults.  This appears to be unrelated to our authorization logic additions.)
-\end{section}
+\paragraph{authcompare} This program sets up the logic to compare mapping memory using runtime authorization and \textsf{sys\_page\_map} to using IPC.  The goal is to map 1000 pages from one environment to another.  The authorization logic setup is the same as in \textsf{authmemmap}.  When using IPC, the sender loops, calling \textsf{ipc\_send} and the receiver loops, calling \textsf{ipc\_receive}.
 
-\begin{section}{Evaluation}
+\section{Evaluation}\label{sec:eval}
 \subsection{Performance}
 \begin{figure}
 \includegraphics[width=\textwidth]{plots.pdf}
-\caption{Performance of authorization logic proof checking compared with previous JOS mechanism.}
+\caption{The left and center plots show the performance of authorization logic proof checking compared with previous JOS mechanism.  The right plot shows the effect of proof-caching and compares mapping 1,000 pages with our authorization checks to sending pages over IPC.}
 \label{fig:perf}
 \end{figure}
-To evaluate the performance of the proof checker in the kernel we implemented a dummy system call that checks authorization and immediately returns.  This also allows for easily checking a proof which turned out to be useful for debugging proof construction.  We compared the performance of the existing parent/child check to that of checking a simple attestation proof as in the example in Listing \ref{code:attest}, and against a more complex delegation proof as described in Section \ref{sec:delegation}.  We measured CPU cycles from within QEMU using rdtsc().  These were measured from the time the system call function was called in the kernel to the time it returns so it does not include any kernel crossings.  The left plot in Figure \ref{fig:perf} shows the number of cycles for just the authentication checks.  Each circle is the average of 40,000 calls for \textsf{envid2env} and attestation and 1500 calls for delegation.  The right shows the number of cycles for the \textsf{sys\_env\_destroy} function call.  Each circle in this plot is a single call to \textsf{sys\_env\_destroy}. (Note that we made many other system calls prior to \textsf{sys\_env\_destroy} since the first system call took significantly longer in each case due to what we assume were cache effects).
+To evaluate the performance of the proof checker in the kernel we implemented a dummy system call that checks authorization and immediately returns.  This also allows for easily checking a proof which turned out to be useful for debugging proof construction.  As seen in Figure \ref{fig:perf}, we compared the performance of the existing parent/child check to that of checking a simple attestation proof as in the example in Listing \ref{code:attest}, and against a more complex delegation proof as described in Section \ref{sec:delegation}.  We measured CPU cycles from within QEMU using rdtsc().  These were measured from the time the system call function was called in the kernel to the time it returns so it does not include any kernel crossings.  The left and center plots in Figure \ref{fig:perf} use no proof-caching, so this is roughly equivalent to checking a different proof in each system call.  The left plot in Figure \ref{fig:perf} shows the number of cycles for just the authentication checks.  Each circle is the average of 40,000 calls for \textsf{envid2env} and attestation and 1500 calls for delegation.  The center shows the number of cycles for the \textsf{sys\_env\_destroy} function call.  Each circle in this plot is a single call to \textsf{sys\_env\_destroy}. (Note that we made many other system calls prior to \textsf{sys\_env\_destroy} since the first system call took significantly longer in each case due to what we assume were cache effects).
 \newline\newline
-The left plot in Figure \ref{fig:perf} shows a significant amount of slowdown.  The simple attestation is about 110 times slower than the simple parent/child check, and checking delegation is approximately 3.5 times slower than the simple check.  The proof for attestation can be seen in Figure \ref{fig:attest} and the proof for delegation in Figure \ref{fig:delegation}.  Each horizontal line is effectively either a runtime check or a run of the proof checker.  The simple proof has 4 checks while the delegation proof has 12, so, as expected, we see an approximately linear slowdown with increased proof complexity.  On the right side of Figure \ref{fig:perf} we see that the work done by a complex system call, such as \textsf{sys\_env\_destroy}, dominates the proof checking time with less than 5\% slow down for simple proof checking and less than 15\% slowdown for the delegation proof.  Note that the delegation proof is enabling environment interactions that would be impossible in the parent/child scheme, an environment can fall back on the fast parent/ child check by setting their goal to \textsf{NULL}.  Any scheme performing more complex checks would inevitably be slower, but we probably see additional slowdown as we trade performance for flexibility and generality.  
+The left plot in Figure \ref{fig:perf} shows a significant amount of slowdown.  The simple attestation is about 110 times slower than the simple parent/child check, and checking delegation is approximately 3.5 times slower than the simple check.  The proof for attestation can be seen in Figure \ref{fig:attest} and the proof for delegation in Figure \ref{fig:delegation}.  Each horizontal line is effectively either a runtime check or a run of the proof checker.  The simple proof has 4 checks while the delegation proof has 12, so, as expected, we see an approximately linear slowdown with increased proof complexity.  In the center of Figure \ref{fig:perf} we see that the work done by a complex system call, such as \textsf{sys\_env\_destroy}, dominates the proof checking time with less than 5\% slow down for simple proof checking and less than 15\% slowdown for the delegation proof.  Note that the delegation proof is enabling environment interactions that would be impossible in the parent/child scheme, an environment can fall back on the fast parent/ child check by setting their goal to \textsf{NULL}.  Any scheme performing more complex checks would inevitably be slower, but we probably see additional slowdown as we trade performance for flexibility and generality.  In addition we end up doing a lot of unnecessary memory copying to simplify memory management.
+\subsubsection{Proof Caching}\label{sec:cacheperf}
+Some of this performance can be gained back without sacrificing functionality.  Something that was successful in Nexus was proof-caching \cite{Nexus}.  For frequently used proofs we could cache the proof checker output in the kernel, or at least cache the parts that do not require dynamic runtime checks (everything but confirmation verifications).  Not in Nexus, environments could also provide a proof-caching service.  An environment, $A$, would be presented with a valid complex proof of $\says{A}{F}$ and sign a copy of $F$, which can then be used in place of the original proof.  We leave this as future work.
 \newline\newline
-Some of this performance can be gained back without sacrificing functionality.  Something that was successful in the Nexus was proof-caching \cite{Nexus}.  For frequently used proofs we could cache the proof checker output in the kernel, or at least cache the parts that do not require dynamic runtime checks, such as confirmation and signature verifications.  Not in Nexus, environments could also provide a proof-caching service.  An environment, $A$, would be presented with a valid complex proof of $\says{A}{F}$ and sign a copy of $F$, which can then be used in place of the original proof.  
+As discussed in Section \ref{sec:cache} we implemented a rudimentary proof-caching mechanism within the kernel. The center plot of Figure \ref{fig:perf} shows the effects of proof caching.  As expected we see a dramatic reduction in authorization time.  In fact, with proof-caching, we can map 1,000 pages faster than we can send them over IPC.  Without proof-caching, authorization checks take about twice the amount of time as sending IPC messages.
 \subsection{Usability}
 \todo{pretty print}
 \newline
 \todo{helper constructors}
 
-\end{section}
-\begin{section}{Example: Delegation}\label{sec:delegation}
+\section{Example: Delegation}\label{sec:delegation}
 Suppose an environment wishes to accept as ``OK'' whatever another environment accepts as ``OK''.  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
 $C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.  A typical proof using delegation can be seen in Figure \ref{fig:delegation}.  We have added helper functions to create these proofs.  The use of these to construct a proof can be seen in Listing \ref{code:delegation}.
 \newline\newline
 \begin{figure}
-$C_2$ \textsf{delegates to} $P$:
-\begin{center}
-$\trfrac[\;\sayssignrule]{\trfrac[\;\signrule]{\rtcheck}{\sign{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}} \quad \trfrac[\;\tautorule]{\trfrac[\;\assumprule]{\rtcheck}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}}{\says{C_2}{\abs{\imp{\says{P}{\pred{OK}{v_{0}}}}{\pred{OK}{v_{0}}}}}}$
-\end{center}
-$P$ \textsf{authorizes} $C_1$:
-\begin{center} $\trfrac[\;\tautorule]{\trfrac[\;\implrule]{\trfrac[\;\sayssignrule]{\trfrac[\;\signrule]{\rtcheck}{\sign{P}{\pred{OK}{C_1}}} \quad \trfrac[\;\tautorule]{\trfrac[\;\assumprule]{\rtcheck}{\pred{OK}{C_1}}}{\says{P}{\pred{OK}{C_1}}}}{\says{P}{\pred{OK}{C_1}}} \quad \trfrac[\;\assumprule]{\rtcheck}{\imp{\says{P}{\pred{OK}{C_1}}}{\pred{OK}{C_1}}}}{\pred{OK}{C_1}}}{\says{C_2}{\pred{OK}{C_1}}}$
-\end{center}
-$\says{C_2}{\pred{OK}{C_1}}$:
-\begin{center}
-$\trfrac[\;\specrule]{C_2 \textsf{ delegates to } P \quad C_1 \quad P \textsf{ authorizes } C_1}{\says{C_2}{\pred{OK}{C_1}}}$
-\end{center}
+
 \caption{Delegation Proof}
 \label{fig:delegation}
 \end{figure}
@@ -287,19 +276,16 @@ Proof  perm = says_from_signed(P, pred);
 Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
 \end{lstlisting}
 In Listing \ref{code:delegation}, $P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed'' to verify the signatures, and by ``assump'' to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
-\end{section}
 
-\begin{section}{Future Work}
+\section{Future Work}
 \todo{Kernel principal.}\newline
 \todo{Multiple goals for a single environment. Multiple up calls}\newline
 \todo{Proof caching (also in performance section).}\newline
 \todo{Other uses. access control, capabilities}\newline
-\end{section}
 
-\begin{section}{Summary}
-\end{section}
+\section{Summary}
 
-\begin{section}{Appendix: JOS Changes}
+\section{Appendix: JOS Changes}
 List of files changed in JOS. \newline
 \newline
 Added:\newline
@@ -329,9 +315,9 @@ inc/syscall.h \newline
 kern/env.c \newline
 kern/env.h \newline
 kern/syscall.c \newline
+kern/trap.c (testing only) \newline
 lib/ipc.c \newline
 lib/syscall.c \newline
-\end{section}
 
 \bibliographystyle{plainnat}
 \bibliography{bib}
