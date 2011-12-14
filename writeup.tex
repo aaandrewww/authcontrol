@@ -150,6 +150,9 @@ $\trfrac[\;\specrule]{\entails{\ctxt}{\says{A}{(\abs{F_1})}} \quad \exists p:\;\
 \label{fig:logic}
 \end{figure}
 
+The inference rules for our logic are given in Figure~\ref{fig:logic}. Rules \weakenrule{}, \implrule{}, \specrule{}, and \assumprule{} are standard.
+The remaining rules are used to infer the beliefs of principals. \tautorule{} says that a principal will believe any objectively true statement. The \saysrule{} rule says that a principal believes anything that can be inferred by assuming its other beliefs are true. The \saysconfrule{} and \sayssignrule{} rules are similar, but refer to asserted beliefs, which are in turn validated by runtime checks.
+
 \paragraph{Example} Suppose that principal $A$ wishes to delegate its authorization decisions to $B$. Then $A$ would assert \sign{A}{\imp{(\says{B}{\pred{OK}{Env}})}{\pred{OK}{Env}}}. Now for any principal $C$ authorized by $B$ (\says{B}{\pred{OK}{C}}), we can derive \says{A}{\pred{OK}{C}}.
 
 \medskip
