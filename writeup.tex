@@ -216,7 +216,7 @@ sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \end{lstlisting}
 
 \subsubsection{Proof Caching}\label{sec:cache}
-We implement a simple form of proof caching.  If the proof checker returns true, we add that proof's goal to a persistent context located in the kernel.  When a proof is checked we first check whether the proof's goal is already in the kernel's context.  If it is then we immediately return true.  Note that we should not cache any proofs using confirmation, since this is a dynamic runtime check.  In our proof of concept proof-caching we do not take this into account.  The effects of caching can be seen in the Section \ref{sec:eval}.
+We implemented a simple form of proof caching.  If the proof checker returns true, we add that proof's goal to a persistent context located in the kernel.  When a proof is checked we first check whether the proof's goal is already in the kernel's context.  If it is then we immediately return true.  Note that we should not cache any proofs using confirmation, since this is a dynamic runtime check.  In our proof of concept proof-caching we do not take this into account.  The effects of caching can be seen in the Section \ref{sec:eval}.  Note that by default proof-caching is disabled (enable in \textsf{kern/env.c}, requires recompilation).
 
 \subsubsection{User Programs}
 \paragraph{prooftest} Contains tests for functions pertaining to building, printing, and copying Formulas and building, printing, copying, and checking Proofs.
