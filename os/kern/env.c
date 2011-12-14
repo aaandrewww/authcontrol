@@ -61,23 +61,24 @@ check_env_auth(struct Env *goalEnv, struct Env *proverEnv) {
 	lcr3(PADDR(goalEnv->env_pgdir));
 	Formula goal = formula_says(principal_pcpl(goalEnv->env_id), formula_subst(goalEnv->goal, 0, proverEnv->env_id));
 	lcr3(PADDR(proverEnv->env_pgdir));
-	
-	if (member(signedStatements, goal)) {
-	  result = true;
-	} else {
+
+	// Proof caching
+//	if (member(signedStatements, goal)) {
+//	  result = true;
+//	} else {
 	  Context start = context_cp(signedStatements);
 	  Proof proof = proof_cp(proverEnv->proof);
 	
 	  result = proof_check(goal, proof, start);
 
     // Cache the proof
-    // TODO shouldn't cache proofs containing confirms
-    if(result) {
-        set_heap(&signedStatementsHeap);
-        push(signedStatements, goal);
-        set_heap(&authHeap);
-    }
-	}
+//    // TODO shouldn't cache proofs containing confirms
+//    if(result) {
+//        set_heap(&signedStatementsHeap);
+//        push(signedStatements, goal);
+//        set_heap(&authHeap);
+//    }
+//	}
 
 	freeall();
 	set_heap(oldHeap);
