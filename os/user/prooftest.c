@@ -1,5 +1,6 @@
 #include <inc/stdio.h>
 #include <inc/proof.h>
+#include <inc/prooflib.h>
 #include <inc/formula.h>
 #include <inc/context.h>
 #include <inc/lib.h>
@@ -907,6 +908,9 @@ void test_proof_check_assump() {
 
 //  proof_print(pf);
 //  cprintf("\\\\\\\\ \n");
+  b = proof_check_lib(fpred, pf, c);
+  if (b != 1)
+    cprintf("ERROR: assump proof check: 1 == %u\n", b);
 }
 
 void test_proof_check_assump_bad() {
@@ -917,7 +921,7 @@ void test_proof_check_assump_bad() {
   Proof pf = proof_assump(fpred);
   bool b;
   cprintf("Expected error:\n");
-  b = proof_check(fpred, pf, c);
+  b = proof_check_lib(fpred, pf, c);
   cprintf(":End expected\n\n");
   if (b != 0)
     cprintf("ERROR: assump proof check (bad context): 0 == %u\n", b);
@@ -934,7 +938,7 @@ void test_proof_check_signed() {
 //  proof_print(p);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(f, p, NULL);
+  bool b = proof_check_lib(f, p, NULL);
   if (b != 1)
     cprintf("ERROR: signed proof check: 1 == %u\n", b);
 }
@@ -953,7 +957,7 @@ void test_proof_check_signed_bad() {
   Formula f2 = formula_signed(prinB, fpred);
   p = proof_signed(f2);
   cprintf("Expected error:\n");
-  bool b = proof_check(f, p, NULL);
+  bool b = proof_check_lib(f, p, NULL);
   cprintf(":End expected\n\n");
   if (b != 0)
     cprintf("ERROR: signed proof check (bad): 0 == %u\n", b);
@@ -969,7 +973,7 @@ void test_proof_check_confirms() {
 //  proof_print(p);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(f, p, NULL);
+  bool b = proof_check_lib(f, p, NULL);
   if (b != 1)
     cprintf("ERROR: confirms proof check: 1 == %u\n", b);
 }
@@ -986,7 +990,7 @@ void test_proof_check_confirms_bad() {
 
   Formula f2 = formula_signed(prinA, fpred);
   cprintf("Expected error:\n");
-  bool b = proof_check(f2, p, NULL);
+  bool b = proof_check_lib(f2, p, NULL);
   cprintf(":End expected\n\n");
   if (b != 0)
     cprintf("ERROR: signed/confirms proof check: 0 == %u\n", b);
@@ -1006,7 +1010,7 @@ void test_proof_check_tauto() {
 //  proof_print(p2);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(f1, p2, c);
+  bool b = proof_check_lib(f1, p2, c);
   if (b != 1)
     cprintf("ERROR: tauto proof check: 1 == %u\n", b);
 }
@@ -1030,7 +1034,7 @@ void test_proof_check_tauto_bad() {
   p1 = proof_assump(fpred);
   p2 = proof_tauto(f1, p1);
   cprintf("Expected error:\n");
-  bool b = proof_check(fpred, p2, c);
+  bool b = proof_check_lib(fpred, p2, c);
   cprintf(":End expected\n\n");
   if (b != 0)
     cprintf("ERROR: tauto proof check (bad): 0 == %u\n", b);
@@ -1051,7 +1055,7 @@ void test_proof_check_weaken_impl() {
 //  proof_print(p2);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(f1, p2, NULL);
+  bool b = proof_check_lib(f1, p2, NULL);
   if (b != 1)
     cprintf("ERROR: weaken_impl proof check: 1 == %u\n", b);
 }
@@ -1074,7 +1078,7 @@ void test_proof_check_impl() {
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(fpred2, p3, c);
+  bool b = proof_check_lib(fpred2, p3, c);
   if (b != 1)
     cprintf("ERROR: impl proof check: 1 == %u\n", b);
 }
@@ -1097,7 +1101,7 @@ void test_proof_check_says_confirms() {
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(Asays2, p3, NULL);
+  bool b = proof_check_lib(Asays2, p3, NULL);
   if (b != 1)
     cprintf("ERROR: says_confirms proof check: 1 == %u\n", b);
 }
@@ -1119,7 +1123,7 @@ void test_proof_check_says_signed() {
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(Asays2, p3, NULL);
+  bool b = proof_check_lib(Asays2, p3, NULL);
   if (b != 1)
     cprintf("ERROR: says_signed proof check: 1 == %u\n", b);
 }
@@ -1142,7 +1146,7 @@ void test_proof_check_says_says() {
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(Asays2, p3, c);
+  bool b = proof_check_lib(Asays2, p3, c);
   if (b != 1)
     cprintf("ERROR: says_says proof check: 1 == %u\n", b);
 }
@@ -1167,7 +1171,7 @@ void test_proof_check_says_spec() {
 //  proof_print(p3);
 //  cprintf("\\\\\\\\ \n");
 
-  bool b = proof_check(Asays2, p3, c);
+  bool b = proof_check_lib(Asays2, p3, c);
   if (b != 1)
     cprintf("ERROR: says_spec proof check: 1 == %u\n", b);
 }
@@ -1186,7 +1190,7 @@ void test_proof_check_delegation() {
   Formula BsaysOKC = formula_says(prinB, OKC);
   Formula impl = formula_impl(BsaysOKC, OKC);
   push(c, impl);
-  b = proof_check(AsaysOKC, delegation, c);
+  b = proof_check_lib(AsaysOKC, delegation, c);
 
   if (b != 1)
     cprintf("ERROR: delegation proof check: 1 == %u\n", b);
