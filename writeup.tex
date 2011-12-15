@@ -175,7 +175,7 @@ While this means that we do not have formal correctness guarantees, prototyping 
 To simplify memory management, all constructors perform a deep copy of their input data structures. This means that a proof can be freed without worrying about the constituent subproofs and formulas.  To make this approach easy to implement, each of the data structures has a comparison function and a deep-copy function.  In addition, to ease debugging and introspection, each data structure can be printed (recursively) as a pre-formatted \LaTeX{ } string (which we used to generate the examples in this report).  In total, the library implementation consists of approximately 2600 lines of C, about half of which is test code.
 
 \subsection{JOS Integration}\label{sec:jos}
-The library described in section \ref{sec:clib} provides a logic and a method to create and check proofs defined in that logic.  In order to use this for authorization we needed to integrate it into an operating system.  We chose to use JOS for simplicity; the existing authorization mechanism was easy to replace.  We chose to focus on replacing environment to environment authentication.  In JOS, an environment is authorized to manipulate another only if it is the direct parent environment. We replace this with a more flexible model built on our authorization logic.  Essentially, to manipulate environment $A$, environment $B$ must provide a proof of a logical formula defined by $A$.  These proofs are checked by the JOS kernel. The modular design of our C library allowed us to more or less drop it into JOS as a library.  In order to facilitate this we essentially only needed to implement a JOS dynamic memory allocator (\textsf{malloc} and \textsf{free}) to replace the \textsf{stdlib} version.   In total we added about 350 lines of C to the kernel 200 of which was the proof checker.  In addition we added about 1650 lines in library functions and 1450 lines in user programs.
+The library described in section \ref{sec:clib} provides a logic and a method to create and check proofs defined in that logic.  In order to use this for authorization we needed to integrate it into an operating system.  We chose to use JOS for simplicity; the existing authorization mechanism was easy to replace.  We chose to focus on replacing environment to environment authentication.  In JOS, an environment is authorized to manipulate another only if it is the direct parent environment. We replace this with a more flexible model built on our authorization logic.  Essentially, to manipulate environment $A$, environment $B$ must provide a proof of a logical formula defined by $A$.  These proofs are checked by the JOS kernel. The modular design of our C library allowed us to more or less drop it into JOS as a library.  In order to facilitate this we essentially only needed to implement a JOS dynamic memory allocator (\textsf{malloc} and \textsf{free}) to replace the \textsf{stdlib} version.   In total we added about 350 lines of C to the kernel 200, of which was the proof checker.  In addition we added about 1650 lines in library functions and 1450 lines in user programs.
 
 \subsubsection{New System Calls}\label{sec:joscalls}
 \paragraph{$\textsf{sys\_set\_goal}$} Each environment can specify an authorization goal for itself using the system call $\textsf{sys\_set\_goal(Formula f)}$.
@@ -198,6 +198,7 @@ This context is used in lieu of digital signatures. When a proof references a si
 \label{fig:attest}
 \end{figure}
 
+\begin{figure}
 \lstset{language=C,caption={Environment $A$ constructs a proof goal, $F$, and signs $F(B)$.  Environment $B$ creates and uses a proof of $\says{A}{F(B)}$ depending on the fact that $A$ signed $F(B)$.},label=code:attest}
 \begin{lstlisting}
 // Constructed in A
@@ -218,11 +219,12 @@ sys_set_proof(P);
 // Map a page from B to A
 sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \end{lstlisting}
+\end{figure}
 
 \paragraph{Example 2}
 Suppose an environment wishes to accept as ``OK'' whatever another environment accepts as ``OK''.  This is a fairly common type of proof called delegation.  Consider the following example.  We have a parent environment, $P$, and two child environments, $C_1$ and $C_2$.
 $C_2$ delegates to $P$.  $C_1$ uses this fact along with the fact that $\sign{P}{\pred{OK}{C_1}}$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  This will allow $C_1$ to make system calls affecting $C_2$, such as $\textsf{sys\_page\_map}$.  A typical proof using delegation can be seen in Figure \ref{fig:delegation}.  We have added helper functions to create these proofs.  The use of these to construct a proof can be seen in Listing \ref{code:delegation}.
-\newline\newline
+
 \begin{figure}
 $C_2$ \textsf{delegates to} $P$:
 \begin{center}
@@ -238,6 +240,8 @@ $\trfrac[\;\specrule]{C_2 \textsf{ delegates to } P \quad C_1 \quad P \textsf{ a
 \caption{Delegation Proof}
 \label{fig:delegation}
 \end{figure}
+
+\begin{figure}
 \lstset{language=C,caption={Delegation using helper functions, proof sharing has been omitted},label=code:delegation}
 \begin{lstlisting}
 // Constructed in C2
@@ -250,6 +254,8 @@ Proof  perm = says_from_signed(P, pred);
 // Constructed in C2
 Proof  use_del = use_delegation(C2, P, C1, OK, del, perm);
 \end{lstlisting}
+\end{figure}
+
 In Listing \ref{code:delegation}, $P_1$ is a proof that $C_2$ delegates to $P$ for the OK predicate, and is constructed in line 2 above.  $P_2$ begins with $\sign{P}{\pred{OK}{C_1}}$ and is then used together with $P_1$ to prove $\says{C_2}{\pred{OK}{C_1}}$.  There are runtime checks required by ``signed'' to verify the signatures, and by ``assump'' to verify that the given statement is in the context (note that this proof begins with an empty context, but that the proof checker adds to its context at runtime).  
 
 \subsubsection{Runtime Verification}
@@ -257,6 +263,8 @@ During proof checking there are three runtime checks: context membership, signat
 
 \subsubsection{Proof Sharing}\label{sec:share}
 It can be easier to construct a proof or parts of a proof in the environment which defines the goal to be proved.  In these cases the proofs need to be handed out to the provers.  To do this we created library functions to send and receive proofs.  These are implemented on top of IPC, adding handling of dynamically allocated data structures.  We can achieve the same result as in Listing \ref{code:attest} using proof sharing as seen in Listing \ref{code:share}.
+
+\begin{figure}
 \lstset{language=C,caption={Environment $A$ constructs a proof and sends it to environment $B$, which then uses the proof.},label=code:share}
 \begin{lstlisting}
 // Constructed in A
@@ -273,13 +281,14 @@ sys_set_proof(P);
 // Map a page from B to A
 sys_page_map(0, Bvaddr, A, Avaddr, perm);
 \end{lstlisting}
+\end{figure}
 
 \subsubsection{Proof Caching}\label{sec:cache}
 We implement a simple form of proof caching.  If the proof checker returns true, we add that proof's goal to a persistent context located in the kernel.  When a proof is checked we first check whether the proof's goal is already in the kernel's context.  If it is then we immediately return true.  Note that we should not cache any proofs using confirmation, since this is a dynamic runtime check.  In our prototype implementation of proof-caching we do not take this into account. The effects of caching can be seen in the Section~\ref{sec:eval}. Note that by default proof-caching is disabled (enable in \textsf{kern/env.c}, requires recompilation).
 
 \subsubsection{User Programs}
 We implemented several user space programs to test our authorization system. Here we give brief descriptions:
-
+\setlength\parskip{0em}
 \paragraph{prooftest} Contains tests for functions pertaining to building, printing, and copying Formulas and building, printing, copying, and checking Proofs.
 \paragraph{prooftimertest} Implements infrastructure used for performance testing.
 \paragraph{authtest} Builds and uses simple attestation proof as in Listing \ref{code:share}.
@@ -287,7 +296,7 @@ We implemented several user space programs to test our authorization system. Her
 \paragraph{fratricide} The parent environment forks 10 children.  Each one delegates to the parent.  The parent then spawns the 11th child, call him Killer, and signs a statement that Killer is OK.  The parent then exits gracefully, and Killer senselessly \textsf{sys\_env\_destroy}s the other 10 children before \textsf{sys\_env\_destroy}ing himself.
 \paragraph{authmemmap} The parent environment forks 2 children.  Each delegates to the parent who then signs that the second environment is OK.  The second environment is then able to map a number of pages into the first environment with a single IPC message, which is used only for synchronization.  Previously each page would need to be shared via a separate IPC message.  (Note that occasionally this program runs into a race condition where the IPC message was received, but the receiving environment still page faults.  This appears to be unrelated to our authorization logic additions.)
 \paragraph{authcompare} This program sets up the logic to compare mapping memory using runtime authorization and \textsf{sys\_page\_map} to using IPC.  The goal is to map 1000 pages from one environment to another.  The authorization logic setup is the same as in \textsf{authmemmap}.  When using IPC, the sender loops, calling \textsf{ipc\_send} and the receiver loops, calling \textsf{ipc\_receive}.
-
+\setlength\parskip{1em}
 \section{Evaluation}\label{sec:eval}
 \subsection{Performance}
 \begin{figure}
